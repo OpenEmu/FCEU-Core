@@ -35,7 +35,7 @@ extern NSString *FCEUEmulatorNames[];
 
 @class OERingBuffer;
 
-@interface FCEUGameEmu : OEGameCore
+@interface FCEUGameCore : OEGameCore
 {
     @public
     uint32    controlPad[MAC_MAX_PLAYERS];

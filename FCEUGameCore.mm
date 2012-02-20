@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "FCEUGameEmu.h"
+#import "FCEUGameCore.h"
 #import <OERingBuffer.h>
 #import "OENESSystemResponderClient.h"
 #import <OpenGL/gl.h>
@@ -38,14 +38,14 @@
 #define SAMPLEFRAME 800
 #define SIZESOUNDBUFFER SAMPLEFRAME*4
 
-@interface FCEUGameEmu () <OENESSystemResponderClient>
+@interface FCEUGameCore () <OENESSystemResponderClient>
 @end
 
 NSUInteger FCEUEmulatorValues[] = { SNES_DEVICE_ID_JOYPAD_A, SNES_DEVICE_ID_JOYPAD_B, SNES_DEVICE_ID_JOYPAD_UP, SNES_DEVICE_ID_JOYPAD_DOWN, SNES_DEVICE_ID_JOYPAD_LEFT, SNES_DEVICE_ID_JOYPAD_RIGHT, SNES_DEVICE_ID_JOYPAD_START, SNES_DEVICE_ID_JOYPAD_SELECT };
 NSString *FCEUEmulatorKeys[] = { @"Joypad@ A", @"Joypad@ B", @"Joypad@ Up", @"Joypad@ Down", @"Joypad@ Left", @"Joypad@ Right", @"Joypad@ Start", @"Joypad@ Select"};
 
-FCEUGameEmu *current;
-@implementation FCEUGameEmu
+FCEUGameCore *current;
+@implementation FCEUGameCore
 
 static uint16_t conv555Rto565(uint16_t p)
 {
