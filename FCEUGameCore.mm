@@ -47,16 +47,20 @@ NSString *FCEUEmulatorKeys[] = { @"Joypad@ Up", @"Joypad@ Down", @"Joypad@ Left"
 
 @implementation FCEUGameCore
 
-static FCEUGameCore *current;
+static __weak FCEUGameCore *_current;
 
 static void audio_callback(uint16_t left, uint16_t right)
 {
+    GET_CURRENT_AND_RETURN();
+
     [[current ringBufferAtIndex:0] write:&left maxLength:2];
     [[current ringBufferAtIndex:0] write:&right maxLength:2];
 }
 
 static void video_callback(const uint16_t *data, unsigned width, unsigned height)
 {
+    GET_CURRENT_AND_RETURN();
+
     // Normally our pitch is 2048 bytes.
     int stride = 1024;
 
@@ -84,6 +88,8 @@ static void input_poll_callback(void)
 
 static int16_t input_state_callback(bool port, unsigned device, unsigned index, unsigned devid)
 {
+    GET_CURRENT_AND_RETURN(0);
+
     //NSLog(@"polled input: port: %d device: %d id: %d", port, device, devid);
 
 	if(port == SNES_PORT_1 & device == SNES_DEVICE_JOYPAD)
@@ -96,6 +102,8 @@ static int16_t input_state_callback(bool port, unsigned device, unsigned index, 
 
 static bool environment_callback(unsigned cmd, void *data)
 {
+    GET_CURRENT_AND_RETURN(true);
+
     switch(cmd)
     {
         case SNES_ENVIRONMENT_SET_TIMING:
@@ -189,7 +197,7 @@ static void writeSaveFile(const char *path, int type)
         videoBuffer = (uint16_t *)malloc(256 * 240 * 2);
     }
 	
-	current = self;
+	_current = self;
 
 	return self;
 }
