@@ -33,6 +33,8 @@
 #include "src/driver.h"
 #include "src/palette.h"
 #include "src/state.h"
+#include "src/emufile.h"
+#include "zlib.h"
 
 extern uint8 *XBuf;
 static uint32_t palette[256];
@@ -198,6 +200,38 @@ static __weak FCEUGameCore *_current;
 {
     int success = FCEUSS_Load([fileName UTF8String], false);
     if(block) block(success==1, nil);
+}
+
+- (NSData *)serializeStateWithError:(NSError **)outError
+{
+    std::vector<u8> byteVector;
+    EMUFILE *emuFile = new EMUFILE_MEMORY(&byteVector);
+    NSData *data = nil;
+    
+    if(FCEUSS_SaveMS(emuFile, Z_NO_COMPRESSION))
+    {
+        const void *bytes = (const void *)(&byteVector[0]);
+        NSUInteger length = byteVector.size();
+        
+        data = [NSData dataWithBytes:bytes length:length];
+    }
+    
+    delete emuFile;
+    return data;
+}
+
+- (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
+{
+    u8 *bytes = (u8 *)[state bytes];
+    size_t length = [state length];
+    std::vector<u8> byteVector(bytes, bytes + length);
+    EMUFILE *emuFile = new EMUFILE_MEMORY(&byteVector);
+    
+    BOOL result = FCEUSS_LoadFP(emuFile, SSLOADPARAM_NOBACKUP);
+    
+    delete emuFile;
+    
+    return result;
 }
 
 # pragma mark - Input
