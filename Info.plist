@@ -17,7 +17,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>2.2.2</string>
 	<key>NSPrincipalClass</key>
 	<string>OEGameCoreController</string>
 	<key>OEGameCoreClass</key>
@@ -25,7 +25,7 @@
 	<key>OEGameCorePlayerCount</key>
 	<string>2</string>
 	<key>OEProjectURL</key>
-	<string>http://sourceforge.net/projects/fceumm/</string>
+	<string>http://sourceforge.net/projects/fceultra/</string>
 	<key>OESystemIdentifiers</key>
 	<array>
 		<string>openemu.system.nes</string>
