@@ -46,6 +46,9 @@ static uint32_t palette[256];
     int32_t *soundBuffer;
     int32_t soundSize;
     uint32_t pad[2][OENESButtonCount];
+    uint32_t arkanoid[3];
+    uint32_t zapper[3];
+    uint32_t hypershot[4];
 }
 
 @end
@@ -76,6 +79,9 @@ static __weak FCEUGameCore *_current;
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
     memset(pad, 0, sizeof(uint32_t) * OENESButtonCount);
+    memset(arkanoid, 0, sizeof(arkanoid));
+    memset(zapper, 0, sizeof(zapper));
+    memset(hypershot, 0, sizeof(hypershot));
 
     //newppu = 0 default off, set 1 to enable
 
@@ -98,7 +104,20 @@ static __weak FCEUGameCore *_current;
     //NSLog(@"FPS: %d", FCEUI_GetDesiredFPS() >> 24); // Hz
 
     FCEUI_SetInput(0, SI_GAMEPAD, &pad[0], 0);
-    FCEUI_SetInput(1, SI_GAMEPAD, &pad[1], 0);
+
+    if(FCEUGameInfo->input[1] == SI_ZAPPER)
+        FCEUI_SetInput(1, SI_ZAPPER, &zapper, 0);
+    else if(FCEUGameInfo->input[1] == SI_ARKANOID)
+        FCEUI_SetInput(1, SI_ARKANOID, &arkanoid, 0);
+    else
+        FCEUI_SetInput(1, SI_GAMEPAD, &pad[1], 0);
+
+    if(FCEUGameInfo->inputfc == SIFC_SHADOW)
+        FCEUI_SetInputFC(SIFC_SHADOW, &hypershot, 0);
+    else if(FCEUGameInfo->inputfc == SIFC_ARKANOID)
+        FCEUI_SetInputFC(SIFC_ARKANOID, &arkanoid, 0);
+
+    //FCEUI_SetInputFourscore(true); // TODO
 
     FCEU_ResetPalette();
 
@@ -251,6 +270,43 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
     int playerShift = player != 1 ? 8 : 0;
 
     pad[player - 1][0] &= ~NESMap[button] << playerShift;
+}
+
+- (oneway void)didTriggerGunAtPoint:(OEIntPoint)aPoint
+{
+    [self mouseMovedAtPoint:aPoint];
+
+    arkanoid[2] = 1;
+
+    zapper[0] = aPoint.x;
+    zapper[1] = aPoint.y;
+    zapper[2] = 1;
+
+    hypershot[0] = aPoint.x;
+    hypershot[1] = aPoint.y;
+    hypershot[2] = 1;
+}
+
+- (oneway void)didReleaseTrigger
+{
+    arkanoid[2] = 0;
+    zapper[2] = 0;
+    hypershot[2] = 0;
+}
+
+- (oneway void)mouseMovedAtPoint:(OEIntPoint)aPoint
+{
+    arkanoid[0] = aPoint.x;
+}
+
+- (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
+{
+    hypershot[3] = 1; // "move" button
+}
+
+- (oneway void)rightMouseUp;
+{
+    hypershot[3] = 0;
 }
 
 // FCEUX internal functions and stubs
