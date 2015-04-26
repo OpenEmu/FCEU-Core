@@ -34,6 +34,7 @@
 #include "src/palette.h"
 #include "src/state.h"
 #include "src/emufile.h"
+#include "src/cart.h"
 #include "zlib.h"
 
 extern uint8 *XBuf;
@@ -45,7 +46,7 @@ static uint32_t palette[256];
     uint8_t *pXBuf;
     int32_t *soundBuffer;
     int32_t soundSize;
-    uint32_t pad[2][OENESButtonCount];
+    uint32_t pad;
     uint32_t arkanoid[3];
     uint32_t zapper[3];
     uint32_t hypershot[4];
@@ -78,7 +79,7 @@ static __weak FCEUGameCore *_current;
 
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
-    memset(pad, 0, sizeof(uint32_t) * OENESButtonCount);
+    pad = 0;
     memset(arkanoid, 0, sizeof(arkanoid));
     memset(zapper, 0, sizeof(zapper));
     memset(hypershot, 0, sizeof(hypershot));
@@ -103,21 +104,89 @@ static __weak FCEUGameCore *_current;
 
     //NSLog(@"FPS: %d", FCEUI_GetDesiredFPS() >> 24); // Hz
 
-    FCEUI_SetInput(0, SI_GAMEPAD, &pad[0], 0);
+    FCEUI_SetInput(0, SI_GAMEPAD, &pad, 0); // Controllers 1 and 3
 
     if(FCEUGameInfo->input[1] == SI_ZAPPER)
         FCEUI_SetInput(1, SI_ZAPPER, &zapper, 0);
     else if(FCEUGameInfo->input[1] == SI_ARKANOID)
         FCEUI_SetInput(1, SI_ARKANOID, &arkanoid, 0);
     else
-        FCEUI_SetInput(1, SI_GAMEPAD, &pad[1], 0);
+        FCEUI_SetInput(1, SI_GAMEPAD, &pad, 0); // Controllers 2 and 4
 
     if(FCEUGameInfo->inputfc == SIFC_SHADOW)
         FCEUI_SetInputFC(SIFC_SHADOW, &hypershot, 0);
     else if(FCEUGameInfo->inputfc == SIFC_ARKANOID)
         FCEUI_SetInputFC(SIFC_ARKANOID, &arkanoid, 0);
 
-    //FCEUI_SetInputFourscore(true); // TODO
+    extern uint32_t iNESGameCRC32;
+    NSString *cartCRC32 = [NSString stringWithFormat:@"%08x", iNESGameCRC32];
+    // Headerless cart data
+    NSArray *fourscoreGames = @[@"1ebb5b42", // Bomberman II (USA)
+                                //@"eac38105", // Championship Bowling (USA)
+                                @"f99e37eb", // Chris Evert & Ivan Lendl in Top Players' Tennis (USA)
+                                //@"c7f0c457", // Crash 'n' the Boys - Street Challenge (USA)
+                                @"48b8ee58", // Four Players' Tennis (Europe)
+                                @"27ca0679", // Danny Sullivan's Indy Heat (Europe)
+                                @"c1b43207", // Danny Sullivan's Indy Heat (USA)
+                                @"79f688bc", // Gauntlet II (Europe)
+                                @"1b71ccdb", // Gauntlet II (USA)
+                                @"1352f1b9", // Greg Norman's Golf Power (USA)
+                                @"2e6ee98d", // Harlem Globetrotters (USA)
+                                @"05104517", // Ivan 'Ironman' Stewart's Super Off Road (Europe)
+                                @"4b041b6b", // Ivan 'Ironman' Stewart's Super Off Road (USA)
+                                @"f54b34bd", // Kings of the Beach - Professional Beach Volleyball (USA)
+                                @"c6c2edb5", // Magic Johnson's Fast Break (USA)
+                                @"0939852f", // M.U.L.E. (USA)
+                                @"2f698c4d", // Monster Truck Rally (USA)
+                                @"b9b4d9e0", // NES Play Action Football (USA)
+                                @"da2cb59a", // Nightmare on Elm Street, A (USA)
+                                @"8da6667d", // Nintendo World Cup (Europe)
+                                @"7c16f819", // Nintendo World Cup (Europe) (Rev A)
+                                @"7f08d0d9", // Nintendo World Cup (Europe) (Rev B)
+                                @"a22657fa", // Nintendo World Cup (USA)
+                                @"308da987", // R.C. Pro-Am II (Europe)
+                                @"9edd2159", // R.C. Pro-Am II (USA)
+                                @"8fa6e92c", // Rackets & Rivals (Europe)
+                                @"ad0394f0", // Roundball - 2-on-2 Challenge (Europe)
+                                @"6e4dcfd2", // Roundball - 2-on-2 Challenge (USA)
+                                @"0abdd5ca", // Spot - The Video Game (Japan)
+                                @"cfae9dfa", // Spot - The Video Game (USA)
+                                @"0b8f8128", // Smash T.V. (Europe)
+                                @"6ee94d32", // Smash T.V. (USA)
+                                @"cf4487a2", // Super Jeopardy! (USA)
+                                @"c05a63b2", // Super Spike V'Ball (Europe)
+                                @"e840fd21", // Super Spike V'Ball (USA)
+                                @"407d6ffd", // Super Spike V'Ball + Nintendo World Cup (USA)
+                                @"213cb3fb", // U.S. Championship V'Ball (Japan)
+                                @"d7077d96", // U.S. Championship V'Ball (Japan) (Beta)
+                                @"d153caf6", // Swords and Serpents (Europe)
+                                @"46135141", // Swords and Serpents (France)
+                                @"3417ec46", // Swords and Serpents (USA)
+                                @"73298c87", // Super Mario Bros. + Tetris + Nintendo World Cup (Europe)
+                                @"f46ef39a"  // Super Mario Bros. + Tetris + Nintendo World Cup (Europe) (Rev A)
+                                ];
+
+    // Most 3-4 player Famicom games need to set '4 player mode' in the expansion port
+    NSArray *famicom4Player = @[@"c39b3bb2", // Bakutoushi Patton-Kun (Japan) (FDS)
+                                @"9992f445", // Championship Bowling (Japan)
+                                @"3e470fe0", // Downtown - Nekketsu Koushinkyoku - Soreyuke Daiundoukai (Japan)
+                                @"4f032933", // Ike Ike! Nekketsu Hockey-bu - Subette Koronde Dairantou (Japan)
+                                @"4b5177e9", // Kunio-kun no Nekketsu Soccer League (Japan)
+                                @"9f03b11f", // Moero TwinBee - Cinnamon Hakase o Sukue! (Japan)
+                                @"13205221", // Moero TwinBee - Cinnamon Hakase wo Sukue! (Japan) (FDS)
+                                @"37e24797", // Nekketsu Kakutou Densetsu (Japan)
+                                @"62c67984", // Nekketsu Koukou Dodgeball-bu (Japan)
+                                @"88062d9a", // Nekketsu! Street Basket - Ganbare Dunk Heroes (Japan)
+                                @"689971f9", // Super Dodge Ball (USA) (3-4p with Game Genie code GEUOLZZA)
+                                @"4ff17864", // Super Dodge Ball (USA) (patched) http://www.romhacking.net/hacks/71/
+                                @"b1b16b8a"  // Wit's (Japan)
+                                ];
+
+    if([fourscoreGames containsObject:cartCRC32])
+        FCEUI_SetInputFourscore(true);
+
+    if([famicom4Player containsObject:cartCRC32])
+        FCEUI_SetInputFC(SIFC_4PLAYER, &pad, 0);
 
     FCEU_ResetPalette();
 
@@ -260,16 +329,44 @@ static __weak FCEUGameCore *_current;
 const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_START, JOY_SELECT};
 - (oneway void)didPushNESButton:(OENESButton)button forPlayer:(NSUInteger)player;
 {
-    int playerShift = player != 1 ? 8 : 0;
+    int playerShift = 0;
+    switch (player) {
+        case 1:
+            playerShift = 0;
+            break;
+        case 2:
+            playerShift = 8;
+            break;
+        case 3:
+            playerShift = 16;
+            break;
+        case 4:
+            playerShift = 24;
+            break;
+    }
 
-    pad[player - 1][0] |= NESMap[button] << playerShift;
+    pad |= NESMap[button] << playerShift;
 }
 
 - (oneway void)didReleaseNESButton:(OENESButton)button forPlayer:(NSUInteger)player;
 {
-    int playerShift = player != 1 ? 8 : 0;
+    int playerShift = 0;
+    switch (player) {
+        case 1:
+            playerShift = 0;
+            break;
+        case 2:
+            playerShift = 8;
+            break;
+        case 3:
+            playerShift = 16;
+            break;
+        case 4:
+            playerShift = 24;
+            break;
+    }
 
-    pad[player - 1][0] &= ~NESMap[button] << playerShift;
+    pad &= ~(NESMap[button] << playerShift);
 }
 
 - (oneway void)didTriggerGunAtPoint:(OEIntPoint)aPoint
