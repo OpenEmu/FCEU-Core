@@ -375,11 +375,11 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 
     arkanoid[2] = 1;
 
-    zapper[0] = aPoint.x;
+    zapper[0] = aPoint.x * 0.800000;
     zapper[1] = aPoint.y;
     zapper[2] = 1;
 
-    hypershot[0] = aPoint.x;
+    hypershot[0] = aPoint.x * 0.800000;
     hypershot[1] = aPoint.y;
     hypershot[2] = 1;
 }
@@ -393,7 +393,7 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 
 - (oneway void)mouseMovedAtPoint:(OEIntPoint)aPoint
 {
-    arkanoid[0] = aPoint.x;
+    arkanoid[0] = aPoint.x * 0.800000;
 }
 
 - (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
