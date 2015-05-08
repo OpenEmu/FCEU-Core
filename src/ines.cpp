@@ -143,14 +143,24 @@ static void SetInput(void) {
 	static struct INPSEL moo[] =
 	{
 		{0x19b0a9f1,	SI_GAMEPAD,		SI_ZAPPER,		SIFC_NONE		},	// 6-in-1 (MGC-023)(Unl)[!]
+        {0xbc9bffcb,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Adventures of Bayou Billy, The (E)
+        {0x67751094,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Adventures of Bayou Billy, The (U)
 		{0x29de87af,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Aerobics Studio
 		{0xd89e5a67,	SI_UNSET,		SI_UNSET,		SIFC_ARKANOID	},	// Arkanoid (J)
 		{0x0f141525,	SI_UNSET,		SI_UNSET,		SIFC_ARKANOID	},	// Arkanoid 2(J)
 		{0x32fb0583,	SI_UNSET,		SI_ARKANOID,	SIFC_NONE		},	// Arkanoid(NES)
 		{0x60ad090a,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Athletic World
 		{0x48ca0ee1,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_BWORLD		},	// Barcode World
-		{0x4318a2f8,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting
+        {0xbbe40dc4,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Baby Boomer (Unl)
+        {0x1f6660e6,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting (E)
+		{0x4318a2f8,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting (U)
+        {0x231bc76e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (Australia) (Unl)
+        {0xb79f2651,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (U) (Unl)
+        {0xc3c9d852,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (U) (Unl) [a1]
+        {0xdf31b364,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Cobra Mission (Asia) (Unl)
+        {0x4d68cfb1,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Crime Busters (Unknown) (Unl)
 		{0x6cca1c1f,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Dai Undoukai
+        {0xe145b441,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Day Dreamin' Davey
 		{0x24598791,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Duck Hunt
 		{0xd5d6eac4,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// Edu (As)
 		{0xe9a7fe9e,	SI_UNSET,		SI_MOUSE,		SIFC_NONE		},	// Educational Computer 2000
@@ -165,6 +175,8 @@ static void SetInput(void) {
 		{0x1545bd13,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_QUIZKING	},	// Gimme a Break ... 2
 		{0x4e959173,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gotcha! - The Sport!
 		{0xbeb8ab01,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gumshoe
+        {0x0afb395e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gun Sight
+        {0xe85b4d3d,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Hit Marmot (Asia) (Unl)
 		{0xff24d794,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Hogan's Alley
 		{0x21f85681,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_HYPERSHOT	},	// Hyper Olympic (Gentei Ban)
 		{0x980be936,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_HYPERSHOT	},	// Hyper Olympic
@@ -174,14 +186,21 @@ static void SetInput(void) {
 		{0x2f128512,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Jogging Race
 		{0xbb33196f,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Keyboard Transformer
 		{0x8587ee00,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Keyboard Transformer
+        {0xb0480ae9,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Laser Invasion
+        {0x73fb55ac,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Lightgun Game 2 in 1 - Cosmocop + Cyber Monster (Asia) (Unl)
+        {0xddcbda16,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Lightgun Game 2 in 1 - Tough Cop + Super Tough Cop (Asia) (Unl)
 		{0x543ab532,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// LIKO Color Lines
 		{0x368c19a8,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// LIKO Study Cartridge
+        {0xdf3e45d2,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mad City
+        {0xaa9f9765,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mad City (Beta)
+        {0x61061352,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Master Shooter (Asia) (Unl)
 		{0x5ee6008e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mechanized Attack
 		{0x370ceb65,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Meiro Dai Sakusen
 		{0x3a1694f9,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_4PLAYER	},	// Nekketsu Kakutou Densetsu
 		{0x9d048ea4,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_OEKAKIDS	},	// Oeka Kids
+        {0x5529431f,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (E)
 		{0x2a6559a1,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (J)
-		{0xedc3662b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf
+		{0xedc3662b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (U)
 		{0x912989dc,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Playbox BASIC
 		{0x9044550e,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Rairai Kyonshizu
 		{0xea90f3e2,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Running Stadium
@@ -203,7 +222,8 @@ static void SetInput(void) {
 		{0x41401c6d,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// SuporV40
 		{0x23d17f5e,	SI_GAMEPAD,		SI_ZAPPER,		SIFC_NONE		},	// The Lone Ranger
 		{0xc3c0811d,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_OEKAKIDS	},	// The two "Oeka Kids" games
-		{0xde8fd935,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth
+		{0x790b295b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth (E)
+        {0xde8fd935,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth (U)
 		{0x47232739,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_TOPRIDER	},	// Top Rider
 		{0x8a12a7d9,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Totsugeki Fuuun Takeshi Jou
 		{0xb8b9aca3,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Wild Gunman
