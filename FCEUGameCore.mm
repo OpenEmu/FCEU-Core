@@ -157,8 +157,6 @@ static __weak FCEUGameCore *_current;
                                 @"c05a63b2", // Super Spike V'Ball (Europe)
                                 @"e840fd21", // Super Spike V'Ball (USA)
                                 @"407d6ffd", // Super Spike V'Ball + Nintendo World Cup (USA)
-                                @"213cb3fb", // U.S. Championship V'Ball (Japan)
-                                @"d7077d96", // U.S. Championship V'Ball (Japan) (Beta)
                                 @"d153caf6", // Swords and Serpents (Europe)
                                 @"46135141", // Swords and Serpents (France)
                                 @"3417ec46", // Swords and Serpents (USA)
@@ -168,6 +166,7 @@ static __weak FCEUGameCore *_current;
 
     // Most 3-4 player Famicom games need to set '4 player mode' in the expansion port
     NSArray *famicom4Player = @[@"c39b3bb2", // Bakutoushi Patton-Kun (Japan) (FDS)
+                                @"0c401790", // Bomber Man II (Japan)
                                 @"9992f445", // Championship Bowling (Japan)
                                 @"3e470fe0", // Downtown - Nekketsu Koushinkyoku - Soreyuke Daiundoukai (Japan)
                                 @"4f032933", // Ike Ike! Nekketsu Hockey-bu - Subette Koronde Dairantou (Japan)
@@ -179,6 +178,8 @@ static __weak FCEUGameCore *_current;
                                 @"88062d9a", // Nekketsu! Street Basket - Ganbare Dunk Heroes (Japan)
                                 @"689971f9", // Super Dodge Ball (USA) (3-4p with Game Genie code GEUOLZZA)
                                 @"4ff17864", // Super Dodge Ball (USA) (patched) http://www.romhacking.net/hacks/71/
+                                @"213cb3fb", // U.S. Championship V'Ball (Japan)
+                                @"d7077d96", // U.S. Championship V'Ball (Japan) (Beta)
                                 @"b1b16b8a"  // Wit's (Japan)
                                 ];
 
