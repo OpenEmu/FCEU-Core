@@ -160,6 +160,9 @@ static __weak FCEUGameCore *_current;
                                 @"d153caf6", // Swords and Serpents (Europe)
                                 @"46135141", // Swords and Serpents (France)
                                 @"3417ec46", // Swords and Serpents (USA)
+                                @"2da5ece0", // Bomberman 3 (Homebrew) http://tempect.de/senil/games.html
+                                @"90d2e9f0", // K.Y.F.F. (Homebrew) http://slydogstudios.org/index.php/k-y-f-f/
+                                @"1394ded0", // Super PakPak (Homebrew) http://wiki.nesdev.com/w/index.php/Super_PakPak
                                 @"73298c87", // Super Mario Bros. + Tetris + Nintendo World Cup (Europe)
                                 @"f46ef39a"  // Super Mario Bros. + Tetris + Nintendo World Cup (Europe) (Rev A)
                                 ];
