@@ -251,6 +251,11 @@ static __weak FCEUGameCore *_current;
     return OEIntRectMake(0, 0, 256, 240);
 }
 
+- (OEIntSize)aspectSize
+{
+    return OEIntSizeMake(256 * (8.0/7.0), 240);
+}
+
 - (OEIntSize)bufferSize
 {
     return OEIntSizeMake(256, 240);
@@ -380,11 +385,11 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 
     arkanoid[2] = 1;
 
-    zapper[0] = aPoint.x * 0.800000;
+    zapper[0] = aPoint.x * 0.876712;
     zapper[1] = aPoint.y;
     zapper[2] = 1;
 
-    hypershot[0] = aPoint.x * 0.800000;
+    hypershot[0] = aPoint.x * 0.876712;
     hypershot[1] = aPoint.y;
     hypershot[2] = 1;
 }
@@ -398,7 +403,7 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 
 - (oneway void)mouseMovedAtPoint:(OEIntPoint)aPoint
 {
-    arkanoid[0] = aPoint.x * 0.800000;
+    arkanoid[0] = aPoint.x * 0.876712;
 }
 
 - (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
