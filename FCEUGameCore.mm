@@ -35,6 +35,7 @@
 #include "src/state.h"
 #include "src/emufile.h"
 #include "src/cart.h"
+#include "src/cheat.h"
 #include "zlib.h"
 
 extern uint8 *XBuf;
@@ -414,6 +415,47 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 - (oneway void)rightMouseUp;
 {
     hypershot[3] = 0;
+}
+
+#pragma mark - Cheats
+
+NSMutableDictionary *cheatList = [[NSMutableDictionary alloc] init];
+
+- (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
+{
+    // Sanitize
+    code = [code stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    // Remove any spaces
+    code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+    if (enabled)
+        [cheatList setValue:@YES forKey:code];
+    else
+        [cheatList removeObjectForKey:code];
+
+    FCEU_FlushGameCheats(0, 1);
+
+    NSArray *multipleCodes = [[NSArray alloc] init];
+
+    // Apply enabled cheats found in dictionary
+    for (id key in cheatList)
+    {
+        if ([[cheatList valueForKey:key] isEqual:@YES])
+        {
+            // Handle multi-line cheats
+            multipleCodes = [key componentsSeparatedByString:@"+"];
+            for (NSString *singleCode in multipleCodes) {
+                const char *cCode = [singleCode UTF8String];
+
+                int address, value, compare;
+                int type = 1;
+
+                if (FCEUI_DecodeGG(cCode, &address, &value, &compare))
+                    FCEUI_AddCheat(cCode, address, value, compare, type);
+            }
+        }
+    }
 }
 
 // FCEUX internal functions and stubs
