@@ -201,11 +201,6 @@ static __weak FCEUGameCore *_current;
 
 - (void)executeFrame
 {
-    [self executeFrameSkippingFrame:NO];
-}
-
-- (void)executeFrameSkippingFrame:(BOOL)skip
-{
     pXBuf = 0;
     soundSize = 0;
 
@@ -291,16 +286,15 @@ static __weak FCEUGameCore *_current;
 
 # pragma mark - Save States
 
-- (BOOL)saveStateToFileAtPath:(NSString *)fileName
+- (void)saveStateToFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    FCEUSS_Save([fileName UTF8String], false);
-    return YES;
+    FCEUSS_Save(fileName.fileSystemRepresentation, false);
+    block(YES, nil);
 }
 
 - (void)loadStateFromFileAtPath:(NSString *)fileName completionHandler:(void (^)(BOOL, NSError *))block
 {
-    int success = FCEUSS_Load([fileName UTF8String], false);
-    if(block) block(success==1, nil);
+    block(FCEUSS_Load(fileName.fileSystemRepresentation, false), nil);
 }
 
 - (NSData *)serializeStateWithError:(NSError **)outError
@@ -309,8 +303,7 @@ static __weak FCEUGameCore *_current;
     EMUFILE *emuFile = new EMUFILE_MEMORY(&byteVector);
     NSData *data = nil;
     
-    if(FCEUSS_SaveMS(emuFile, Z_NO_COMPRESSION))
-    {
+    if(FCEUSS_SaveMS(emuFile, Z_NO_COMPRESSION)) {
         const void *bytes = (const void *)(&byteVector[0]);
         NSUInteger length = byteVector.size();
         
