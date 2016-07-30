@@ -20,6 +20,10 @@ const int INVALID_STATE = 99;
 extern int noGui;
 extern int isloaded;
 
+extern int dendy;
+extern int pal_emulation;
+extern bool swapDuty;
+
 int LoadGame(const char *path);
 int CloseGame(void);
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
