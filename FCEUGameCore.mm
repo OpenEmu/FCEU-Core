@@ -51,6 +51,8 @@ static uint32_t palette[256];
     uint32_t arkanoid[3];
     uint32_t zapper[3];
     uint32_t hypershot[4];
+    dispatch_source_t AATimer[4];
+    dispatch_source_t BBTimer[4];
 }
 
 @end
@@ -348,8 +350,31 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
             playerShift = 24;
             break;
     }
-
-    pad |= NESMap[button] << playerShift;
+    if (button == OENESButtonAA || button == OENESButtonBB) {
+        if (button == OENESButtonAA) {
+            AATimer[player - 1] = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
+            dispatch_source_set_timer(AATimer[player - 1], DISPATCH_TIME_NOW, .01 * NSEC_PER_SEC, 0 * NSEC_PER_SEC);
+            dispatch_source_set_event_handler(AATimer[player - 1], ^{
+                [self didPushNESButton:OENESButtonA forPlayer:player];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.005 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [self didReleaseNESButton:OENESButtonA forPlayer:player];
+                });
+            });
+            dispatch_resume(AATimer[player - 1]);
+        } else {
+            BBTimer[player - 1] = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
+            dispatch_source_set_timer(BBTimer[player - 1], DISPATCH_TIME_NOW, .01 * NSEC_PER_SEC, 0 * NSEC_PER_SEC);
+            dispatch_source_set_event_handler(BBTimer[player - 1], ^{
+                [self didPushNESButton:OENESButtonB forPlayer:player];
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.005 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [self didReleaseNESButton:OENESButtonB forPlayer:player];
+                });
+            });
+            dispatch_resume(BBTimer[player - 1]);
+        }
+    } else {
+        pad |= NESMap[button] << playerShift;
+    }
 }
 
 - (oneway void)didReleaseNESButton:(OENESButton)button forPlayer:(NSUInteger)player;
@@ -369,8 +394,15 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
             playerShift = 24;
             break;
     }
-
-    pad &= ~(NESMap[button] << playerShift);
+    if (button == OENESButtonAA || button == OENESButtonBB) {
+        if (button == OENESButtonAA) {
+            dispatch_cancel(AATimer[player - 1]);
+        } else {
+            dispatch_cancel(BBTimer[player - 1]);
+        }
+    } else {
+        pad &= ~(NESMap[button] << playerShift);
+    }
 }
 
 - (oneway void)didTriggerGunAtPoint:(OEIntPoint)aPoint
