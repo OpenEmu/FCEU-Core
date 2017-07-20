@@ -44,7 +44,6 @@ static uint32_t palette[256];
 @interface FCEUGameCore () <OENESSystemResponderClient>
 {
     uint32_t *videoBuffer;
-    uint8_t *pXBuf;
     int32_t *soundBuffer;
     int32_t soundSize;
     uint32_t pad;
@@ -63,7 +62,6 @@ static __weak FCEUGameCore *_current;
 {
     if((self = [super init]))
     {
-        videoBuffer = (uint32_t *)malloc(256 * 240 * 4);
     }
 
 	_current = self;
@@ -201,15 +199,10 @@ static __weak FCEUGameCore *_current;
 
 - (void)executeFrame
 {
-    pXBuf = 0;
+    uint8_t *pXBuf;
     soundSize = 0;
 
     FCEUI_Emulate(&pXBuf, &soundBuffer, &soundSize, 0);
-
-    pXBuf = XBuf;
-    for (unsigned y = 0; y < 240; y++)
-        for (unsigned x = 0; x < 256; x++, pXBuf++)
-            videoBuffer[y * 256 + x] = palette[*pXBuf];
 
     for (int i = 0; i < soundSize; i++)
         soundBuffer[i] = (soundBuffer[i] << 16) | (soundBuffer[i] & 0xffff);
@@ -237,9 +230,21 @@ static __weak FCEUGameCore *_current;
 
 # pragma mark - Video
 
-- (const void *)videoBuffer
+- (const void *)getVideoBufferWithHint:(void *)hint
 {
-    return videoBuffer;
+    if (!hint) {
+        if (!videoBuffer) videoBuffer = (uint32_t *)malloc(256 * 240 * 4);
+        hint = videoBuffer;
+    }
+
+    // TODO: support paletted video in OE
+    uint8_t *pXBuf = XBuf;
+    uint8_t *pOBuf = (uint8_t*)hint;
+    for (unsigned y = 0; y < 240; y++)
+        for (unsigned x = 0; x < 256; x++, pXBuf++)
+            pOBuf[y * 256 + x] = palette[*pXBuf];
+
+    return hint;
 }
 
 - (OEIntRect)screenRect
@@ -265,11 +270,6 @@ static __weak FCEUGameCore *_current;
 - (GLenum)pixelType
 {
     return GL_UNSIGNED_INT_8_8_8_8_REV;
-}
-
-- (GLenum)internalPixelFormat
-{
-    return GL_RGB8;
 }
 
 # pragma mark - Audio
