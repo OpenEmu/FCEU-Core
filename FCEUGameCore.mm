@@ -239,7 +239,7 @@ static __weak FCEUGameCore *_current;
 
     // TODO: support paletted video in OE
     uint8_t *pXBuf = XBuf;
-    uint8_t *pOBuf = (uint8_t*)hint;
+    uint32_t *pOBuf = (uint32_t*)hint;
     for (unsigned y = 0; y < 240; y++)
         for (unsigned x = 0; x < 256; x++, pXBuf++)
             pOBuf[y * 256 + x] = palette[*pXBuf];
