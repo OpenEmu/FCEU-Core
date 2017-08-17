@@ -89,14 +89,14 @@ static __weak FCEUGameCore *_current;
 
     NSURL *batterySavesDirectory = [NSURL fileURLWithPath:[self batterySavesDirectoryPath]];
     [[NSFileManager defaultManager] createDirectoryAtURL:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:nil];
-    //FCEUI_SetBaseDirectory([[self biosDirectoryPath] UTF8String]); unused for now
-    FCEUI_SetDirOverride(FCEUIOD_NV, strdup([[batterySavesDirectory path] UTF8String]));
+    //FCEUI_SetBaseDirectory([[self biosDirectoryPath] fileSystemRepresentation]); unused for now
+    FCEUI_SetDirOverride(FCEUIOD_NV, strdup(batterySavesDirectory.path.fileSystemRepresentation));
 
     FCEUI_SetSoundVolume(256);
     FCEUI_Sound(48000);
 
     FCEUGI *FCEUGameInfo;
-    FCEUGameInfo = FCEUI_LoadGame([path UTF8String], 1, false);
+    FCEUGameInfo = FCEUI_LoadGame(path.fileSystemRepresentation, 1, false);
 
     if(!FCEUGameInfo)
         return NO;
