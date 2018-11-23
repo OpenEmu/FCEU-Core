@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2015, OpenEmu Team
+ Copyright (c) 2018, OpenEmu Team
  
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -43,13 +43,14 @@ static uint32_t palette[256];
 
 @interface FCEUGameCore () <OENESSystemResponderClient>
 {
-    uint32_t *videoBuffer;
-    int32_t *soundBuffer;
-    int32_t soundSize;
-    uint32_t pad;
-    uint32_t arkanoid[3];
-    uint32_t zapper[3];
-    uint32_t hypershot[4];
+    uint32_t *_videoBuffer;
+    int32_t  *_soundBuffer;
+    int32_t   _soundSize;
+    uint32_t  _pad;
+    uint32_t  _arkanoid[3];
+    uint32_t  _zapper[3];
+    uint32_t  _hypershot[4];
+    NSMutableDictionary<NSString *, NSNumber *> *_cheatList;
 }
 
 @end
@@ -62,6 +63,7 @@ static __weak FCEUGameCore *_current;
 {
     if((self = [super init]))
     {
+        _cheatList = [NSMutableDictionary dictionary];
     }
 
 	_current = self;
@@ -71,26 +73,26 @@ static __weak FCEUGameCore *_current;
 
 - (void)dealloc
 {
-    free(videoBuffer);
+    free(_videoBuffer);
 }
 
 # pragma mark - Execution
 
 - (BOOL)loadFileAtPath:(NSString *)path error:(NSError **)error
 {
-    pad = 0;
-    memset(arkanoid, 0, sizeof(arkanoid));
-    memset(zapper, 0, sizeof(zapper));
-    memset(hypershot, 0, sizeof(hypershot));
+    _pad = 0;
+    memset(_arkanoid, 0, sizeof(_arkanoid));
+    memset(_zapper, 0, sizeof(_zapper));
+    memset(_hypershot, 0, sizeof(_hypershot));
 
     //newppu = 0 default off, set 1 to enable
 
     FCEUI_Initialize();
 
-    NSURL *batterySavesDirectory = [NSURL fileURLWithPath:[self batterySavesDirectoryPath]];
-    [[NSFileManager defaultManager] createDirectoryAtURL:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+    NSURL *batterySavesDirectory = [NSURL fileURLWithPath:self.batterySavesDirectoryPath];
+    [NSFileManager.defaultManager createDirectoryAtURL:batterySavesDirectory withIntermediateDirectories:YES attributes:nil error:nil];
     //FCEUI_SetBaseDirectory([[self biosDirectoryPath] fileSystemRepresentation]); unused for now
-    FCEUI_SetDirOverride(FCEUIOD_NV, strdup(batterySavesDirectory.path.fileSystemRepresentation));
+    FCEUI_SetDirOverride(FCEUIOD_NV, strdup(batterySavesDirectory.fileSystemRepresentation));
 
     FCEUI_SetSoundVolume(256);
     FCEUI_Sound(48000);
@@ -103,19 +105,19 @@ static __weak FCEUGameCore *_current;
 
     //NSLog(@"FPS: %d", FCEUI_GetDesiredFPS() >> 24); // Hz
 
-    FCEUI_SetInput(0, SI_GAMEPAD, &pad, 0); // Controllers 1 and 3
+    FCEUI_SetInput(0, SI_GAMEPAD, &_pad, 0); // Controllers 1 and 3
 
     if(FCEUGameInfo->input[1] == SI_ZAPPER)
-        FCEUI_SetInput(1, SI_ZAPPER, &zapper, 0);
+        FCEUI_SetInput(1, SI_ZAPPER, &_zapper, 0);
     else if(FCEUGameInfo->input[1] == SI_ARKANOID)
-        FCEUI_SetInput(1, SI_ARKANOID, &arkanoid, 0);
+        FCEUI_SetInput(1, SI_ARKANOID, &_arkanoid, 0);
     else
-        FCEUI_SetInput(1, SI_GAMEPAD, &pad, 0); // Controllers 2 and 4
+        FCEUI_SetInput(1, SI_GAMEPAD, &_pad, 0); // Controllers 2 and 4
 
     if(FCEUGameInfo->inputfc == SIFC_SHADOW)
-        FCEUI_SetInputFC(SIFC_SHADOW, &hypershot, 0);
+        FCEUI_SetInputFC(SIFC_SHADOW, &_hypershot, 0);
     else if(FCEUGameInfo->inputfc == SIFC_ARKANOID)
-        FCEUI_SetInputFC(SIFC_ARKANOID, &arkanoid, 0);
+        FCEUI_SetInputFC(SIFC_ARKANOID, &_arkanoid, 0);
 
     extern uint32_t iNESGameCRC32;
     NSString *cartCRC32 = [NSString stringWithFormat:@"%08x", iNESGameCRC32];
@@ -190,7 +192,7 @@ static __weak FCEUGameCore *_current;
         FCEUI_SetInputFourscore(true);
 
     if([famicom4Player containsObject:cartCRC32])
-        FCEUI_SetInputFC(SIFC_4PLAYER, &pad, 0);
+        FCEUI_SetInputFC(SIFC_4PLAYER, &_pad, 0);
 
     FCEU_ResetPalette();
 
@@ -200,14 +202,14 @@ static __weak FCEUGameCore *_current;
 - (void)executeFrame
 {
     uint8_t *pXBuf;
-    soundSize = 0;
+    _soundSize = 0;
 
-    FCEUI_Emulate(&pXBuf, &soundBuffer, &soundSize, 0);
+    FCEUI_Emulate(&pXBuf, &_soundBuffer, &_soundSize, 0);
 
-    for (int i = 0; i < soundSize; i++)
-        soundBuffer[i] = (soundBuffer[i] << 16) | (soundBuffer[i] & 0xffff);
+    for (int i = 0; i < _soundSize; i++)
+        _soundBuffer[i] = (_soundBuffer[i] << 16) | (_soundBuffer[i] & 0xffff);
 
-    [[self ringBufferAtIndex:0] write:soundBuffer maxLength:soundSize << 2];
+    [[self ringBufferAtIndex:0] write:_soundBuffer maxLength:_soundSize << 2];
 }
 
 - (void)resetEmulation
@@ -233,13 +235,13 @@ static __weak FCEUGameCore *_current;
 - (const void *)getVideoBufferWithHint:(void *)hint
 {
     if (!hint) {
-        if (!videoBuffer) videoBuffer = (uint32_t *)malloc(256 * 240 * 4);
-        hint = videoBuffer;
+        if (!_videoBuffer) _videoBuffer = (uint32_t *)malloc(256 * 240 * sizeof(uint32_t));
+        hint = _videoBuffer;
     }
 
     // TODO: support paletted video in OE
     uint8_t *pXBuf = XBuf;
-    uint32_t *pOBuf = (uint32_t*)hint;
+    uint32_t *pOBuf = (uint32_t *)hint;
     for (unsigned y = 0; y < 240; y++)
         for (unsigned x = 0; x < 256; x++, pXBuf++)
             pOBuf[y * 256 + x] = palette[*pXBuf];
@@ -316,8 +318,8 @@ static __weak FCEUGameCore *_current;
 
 - (BOOL)deserializeState:(NSData *)state withError:(NSError **)outError
 {
-    u8 *bytes = (u8 *)[state bytes];
-    size_t length = [state length];
+    u8 *bytes = (u8 *)state.bytes;
+    size_t length = state.length;
     std::vector<u8> byteVector(bytes, bytes + length);
     EMUFILE *emuFile = new EMUFILE_MEMORY(&byteVector);
     
@@ -349,7 +351,7 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
             break;
     }
 
-    pad |= NESMap[button] << playerShift;
+    _pad |= NESMap[button] << playerShift;
 }
 
 - (oneway void)didReleaseNESButton:(OENESButton)button forPlayer:(NSUInteger)player;
@@ -370,76 +372,74 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
             break;
     }
 
-    pad &= ~(NESMap[button] << playerShift);
+    _pad &= ~(NESMap[button] << playerShift);
 }
 
 - (oneway void)didTriggerGunAtPoint:(OEIntPoint)aPoint
 {
     [self mouseMovedAtPoint:aPoint];
 
-    arkanoid[2] = 1;
+    _arkanoid[2] = 1;
 
-    zapper[0] = aPoint.x * 0.876712;
-    zapper[1] = aPoint.y;
-    zapper[2] = 1;
+    _zapper[0] = aPoint.x * 0.876712;
+    _zapper[1] = aPoint.y;
+    _zapper[2] = 1;
 
-    hypershot[0] = aPoint.x * 0.876712;
-    hypershot[1] = aPoint.y;
-    hypershot[2] = 1;
+    _hypershot[0] = aPoint.x * 0.876712;
+    _hypershot[1] = aPoint.y;
+    _hypershot[2] = 1;
 }
 
 - (oneway void)didReleaseTrigger
 {
-    arkanoid[2] = 0;
-    zapper[2] = 0;
-    hypershot[2] = 0;
+    _arkanoid[2] = 0;
+    _zapper[2] = 0;
+    _hypershot[2] = 0;
 }
 
 - (oneway void)mouseMovedAtPoint:(OEIntPoint)aPoint
 {
-    arkanoid[0] = aPoint.x * 0.876712;
+    _arkanoid[0] = aPoint.x * 0.876712;
 }
 
 - (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
 {
-    hypershot[3] = 1; // "move" button
+    _hypershot[3] = 1; // "move" button
 }
 
 - (oneway void)rightMouseUp;
 {
-    hypershot[3] = 0;
+    _hypershot[3] = 0;
 }
 
 #pragma mark - Cheats
 
-NSMutableDictionary *cheatList = [[NSMutableDictionary alloc] init];
-
 - (void)setCheat:(NSString *)code setType:(NSString *)type setEnabled:(BOOL)enabled
 {
     // Sanitize
-    code = [code stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    code = [code stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 
     // Remove any spaces
     code = [code stringByReplacingOccurrencesOfString:@" " withString:@""];
 
     if (enabled)
-        [cheatList setValue:@YES forKey:code];
+        _cheatList[code] = @YES;
     else
-        [cheatList removeObjectForKey:code];
+        [_cheatList removeObjectForKey:code];
 
     FCEU_FlushGameCheats(0, 1);
 
-    NSArray *multipleCodes = [[NSArray alloc] init];
+    NSArray<NSString *> *multipleCodes = [NSArray array];
 
     // Apply enabled cheats found in dictionary
-    for (id key in cheatList)
+    for (NSString *key in _cheatList)
     {
-        if ([[cheatList valueForKey:key] isEqual:@YES])
+        if ([_cheatList[key] boolValue])
         {
             // Handle multi-line cheats
             multipleCodes = [key componentsSeparatedByString:@"+"];
             for (NSString *singleCode in multipleCodes) {
-                const char *cCode = [singleCode UTF8String];
+                const char *cCode = singleCode.UTF8String;
 
                 int address, value, compare;
                 int type = 1;
@@ -505,11 +505,11 @@ ArchiveScanRecord FCEUD_ScanArchive(std::string fname) { return ArchiveScanRecor
 void GetMouseData(uint32 (&md)[3]) {}
 void FCEUD_PrintError(const char *s)
 {
-    NSLog(@"FCEUX error: %s", s);
+    NSLog(@"[FCEUX] error: %s", s);
 }
 void FCEUD_Message(const char *s)
 {
-    NSLog(@"FCEUX message: %s", s);
+    NSLog(@"[FCEUX] message: %s", s);
 }
 
 @end
