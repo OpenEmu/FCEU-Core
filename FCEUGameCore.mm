@@ -41,6 +41,17 @@
 extern uint8 *XBuf;
 static uint32_t palette[256];
 
+#define OVERSCAN_VERTICAL 8
+#define OVERSCAN_HORIZONTAL 8
+
+#define OptionDefault(_NAME_, _PREFKEY_) @{ OEGameCoreDisplayModeNameKey : _NAME_, OEGameCoreDisplayModePrefKeyNameKey : _PREFKEY_, OEGameCoreDisplayModeStateKey : @YES, }
+#define Option(_NAME_, _PREFKEY_) @{ OEGameCoreDisplayModeNameKey : _NAME_, OEGameCoreDisplayModePrefKeyNameKey : _PREFKEY_, OEGameCoreDisplayModeStateKey : @NO, }
+#define OptionIndented(_NAME_, _PREFKEY_) @{ OEGameCoreDisplayModeNameKey : _NAME_, OEGameCoreDisplayModePrefKeyNameKey : _PREFKEY_, OEGameCoreDisplayModeStateKey : @NO, OEGameCoreDisplayModeIndentationLevelKey : @(1), }
+#define OptionToggleable(_NAME_, _PREFKEY_) @{ OEGameCoreDisplayModeNameKey : _NAME_, OEGameCoreDisplayModePrefKeyNameKey : _PREFKEY_, OEGameCoreDisplayModeStateKey : @NO, OEGameCoreDisplayModeAllowsToggleKey : @YES, }
+#define OptionToggleableNoSave(_NAME_, _PREFKEY_) @{ OEGameCoreDisplayModeNameKey : _NAME_, OEGameCoreDisplayModePrefKeyNameKey : _PREFKEY_, OEGameCoreDisplayModeStateKey : @NO, OEGameCoreDisplayModeAllowsToggleKey : @YES, OEGameCoreDisplayModeDisallowPrefSaveKey : @YES, }
+#define Label(_NAME_) @{ OEGameCoreDisplayModeLabelKey : _NAME_, }
+#define SeparatorItem() @{ OEGameCoreDisplayModeSeparatorItemKey : @"",}
+
 @interface FCEUGameCore () <OENESSystemResponderClient>
 {
     uint32_t *_videoBuffer;
@@ -50,8 +61,16 @@ static uint32_t palette[256];
     uint32_t  _arkanoid[3];
     uint32_t  _zapper[3];
     uint32_t  _hypershot[4];
+    int       _videoWidth, _videoHeight;
+    int       _videoOffsetX, _videoOffsetY;
+    int       _aspectWidth, _aspectHeight;
+    BOOL      _isHorzOverscanCropped;
+    BOOL      _isVertOverscanCropped;
     NSMutableDictionary<NSString *, NSNumber *> *_cheatList;
+    NSMutableArray <NSMutableDictionary <NSString *, id> *> *_availableDisplayModes;
 }
+
+- (void)loadDisplayModeOptions;
 
 @end
 
@@ -196,6 +215,11 @@ static __weak FCEUGameCore *_current;
 
     FCEU_ResetPalette();
 
+    // Only temporary, so core doesn't crash on an older OpenEmu version
+    if ([self respondsToSelector:@selector(displayModeInfo)]) {
+        [self loadDisplayModeOptions];
+    }
+
     return YES;
 }
 
@@ -251,12 +275,20 @@ static __weak FCEUGameCore *_current;
 
 - (OEIntRect)screenRect
 {
-    return OEIntRectMake(0, 0, 256, 240);
+    _videoOffsetX = _isHorzOverscanCropped ? OVERSCAN_HORIZONTAL : 0;
+    _videoOffsetY = _isVertOverscanCropped ? OVERSCAN_VERTICAL   : 0;
+    _videoWidth   = _isHorzOverscanCropped ? 256 - (OVERSCAN_HORIZONTAL * 2) : 256;
+    _videoHeight  = _isVertOverscanCropped ? 240 - (OVERSCAN_VERTICAL   * 2) : 240;
+
+    return OEIntRectMake(_videoOffsetX, _videoOffsetY, _videoWidth, _videoHeight);
 }
 
 - (OEIntSize)aspectSize
 {
-    return OEIntSizeMake(256 * (8.0/7.0), 240);
+    _aspectWidth  = _isHorzOverscanCropped ? (256 - (OVERSCAN_HORIZONTAL * 2)) * (8.0/7.0) : 256 * (8.0/7.0);
+    _aspectHeight = _isVertOverscanCropped ?  240 - (OVERSCAN_VERTICAL   * 2)              : 240;
+
+    return OEIntSizeMake(_aspectWidth, _aspectHeight);
 }
 
 - (OEIntSize)bufferSize
@@ -379,14 +411,17 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 {
     [self mouseMovedAtPoint:aPoint];
 
+    int xcoord = _isHorzOverscanCropped ? (aPoint.x + OVERSCAN_HORIZONTAL) * 0.876712 : aPoint.x * 0.876712;
+    int ycoord = _isVertOverscanCropped ? aPoint.y + OVERSCAN_VERTICAL : aPoint.y;
+
     _arkanoid[2] = 1;
 
-    _zapper[0] = aPoint.x * 0.876712;
-    _zapper[1] = aPoint.y;
+    _zapper[0] = xcoord;
+    _zapper[1] = ycoord;
     _zapper[2] = 1;
 
-    _hypershot[0] = aPoint.x * 0.876712;
-    _hypershot[1] = aPoint.y;
+    _hypershot[0] = xcoord;
+    _hypershot[1] = ycoord;
     _hypershot[2] = 1;
 }
 
@@ -399,7 +434,7 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
 
 - (oneway void)mouseMovedAtPoint:(OEIntPoint)aPoint
 {
-    _arkanoid[0] = aPoint.x * 0.876712;
+    _arkanoid[0] = _isHorzOverscanCropped ? (aPoint.x + OVERSCAN_HORIZONTAL) * 0.876712 : aPoint.x * 0.876712;
 }
 
 - (oneway void)rightMouseDownAtPoint:(OEIntPoint)point
@@ -448,6 +483,287 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
                     FCEUI_AddCheat(cCode, address, value, compare, type);
             }
         }
+    }
+}
+
+# pragma mark - Display Mode
+
+- (NSArray <NSDictionary <NSString *, id> *> *)displayModes
+{
+    if (_availableDisplayModes.count == 0)
+    {
+        _availableDisplayModes = [NSMutableArray array];
+
+        NSArray <NSDictionary <NSString *, id> *> *availableModesWithDefault =
+        @[
+          OptionToggleableNoSave(@"No Sprite Limit", @"noSpriteLimit"),
+          SeparatorItem(),
+          Label(@"Overscan"),
+          OptionToggleable(@"Crop Horizontal", @"cropHorizontalOverscan"),
+          OptionToggleable(@"Crop Vertical", @"cropVerticalOverscan"),
+          SeparatorItem(),
+          Label(@"Palette"),
+          OptionDefault(@"Default — FCEUX", @"palette"),
+          Option(@"RGB (PlayChoice-10)", @"palette"),
+          Option(@"NESCAP", @"palette"),
+          Option(@"Sony CXA2025AS", @"palette"),
+          Option(@"Smooth (FBX)", @"palette"),
+          Option(@"Wavebeam", @"palette"),
+          ];
+
+        // Deep mutable copy
+        _availableDisplayModes = (NSMutableArray *)CFBridgingRelease(CFPropertyListCreateDeepCopy(kCFAllocatorDefault, (CFArrayRef)availableModesWithDefault, kCFPropertyListMutableContainers));
+    }
+
+    return [_availableDisplayModes copy];
+}
+
+- (void)changeDisplayWithMode:(NSString *)displayMode
+{
+    if (_availableDisplayModes.count == 0)
+        [self displayModes];
+
+    // First check if 'displayMode' is valid
+    BOOL isDisplayModeToggleable = NO;
+    BOOL isValidDisplayMode = NO;
+    BOOL displayModeState = NO;
+    NSString *displayModePrefKey;
+
+    for (NSDictionary *modeDict in _availableDisplayModes) {
+        if ([modeDict[OEGameCoreDisplayModeNameKey] isEqualToString:displayMode]) {
+            displayModeState = [modeDict[OEGameCoreDisplayModeStateKey] boolValue];
+            displayModePrefKey = modeDict[OEGameCoreDisplayModePrefKeyNameKey];
+            isDisplayModeToggleable = [modeDict[OEGameCoreDisplayModeAllowsToggleKey] boolValue];
+            isValidDisplayMode = YES;
+            break;
+        }
+    }
+
+    // Disallow a 'displayMode' not found in _availableDisplayModes
+    if (!isValidDisplayMode)
+        return;
+
+    // Handle option state changes
+    for (NSMutableDictionary *optionDict in _availableDisplayModes) {
+        NSString *modeName =  optionDict[OEGameCoreDisplayModeNameKey];
+        NSString *prefKey  =  optionDict[OEGameCoreDisplayModePrefKeyNameKey];
+        BOOL isToggleable  = [optionDict[OEGameCoreDisplayModeAllowsToggleKey] boolValue];
+        BOOL isSelected    = [optionDict[OEGameCoreDisplayModeStateKey] boolValue];
+
+        if (optionDict[OEGameCoreDisplayModeSeparatorItemKey] || optionDict[OEGameCoreDisplayModeLabelKey])
+            continue;
+        // Mutually exclusive option state change
+        else if ([modeName isEqualToString:displayMode] && !isToggleable)
+            optionDict[OEGameCoreDisplayModeStateKey] = @YES;
+        // Reset mutually exclusive options that are the same prefs group as 'displayMode'
+        else if (!isDisplayModeToggleable && [prefKey isEqualToString:displayModePrefKey])
+            optionDict[OEGameCoreDisplayModeStateKey] = @NO;
+        // Toggleable option state change
+        else if ([modeName isEqualToString:displayMode] && isToggleable)
+            optionDict[OEGameCoreDisplayModeStateKey] = @(!isSelected);
+    }
+
+    if ([displayMode isEqualToString:@"Crop Horizontal"])
+    {
+        _isHorzOverscanCropped = !_isHorzOverscanCropped;
+    }
+    else if ([displayMode isEqualToString:@"Crop Vertical"])
+    {
+        _isVertOverscanCropped = !_isVertOverscanCropped;
+    }
+    else if ([displayMode isEqualToString:@"No Sprite Limit"])
+    {
+        FCEUI_DisableSpriteLimitation(!displayModeState);
+    }
+    else if ([displayMode isEqualToString:@"Default — FCEUX"])
+    {
+        FCEU_ResetPalette();
+    }
+    else if ([displayMode isEqualToString:@"RGB (PlayChoice-10)"])
+    {
+        unsigned int pc10_palette[64] =
+        {
+            0x6D6D6D, 0x002492, 0x0000DB, 0x6D49DB,
+            0x92006D, 0xB6006D, 0xB62400, 0x924900,
+            0x6D4900, 0x244900, 0x006D24, 0x009200,
+            0x004949, 0x000000, 0x000000, 0x000000,
+            0xB6B6B6, 0x006DDB, 0x0049FF, 0x9200FF,
+            0xB600FF, 0xFF0092, 0xFF0000, 0xDB6D00,
+            0x926D00, 0x249200, 0x009200, 0x00B66D,
+            0x009292, 0x242424, 0x000000, 0x000000,
+            0xFFFFFF, 0x6DB6FF, 0x9292FF, 0xDB6DFF,
+            0xFF00FF, 0xFF6DFF, 0xFF9200, 0xFFB600,
+            0xDBDB00, 0x6DDB00, 0x00FF00, 0x49FFDB,
+            0x00FFFF, 0x494949, 0x000000, 0x000000,
+            0xFFFFFF, 0xB6DBFF, 0xDBB6FF, 0xFFB6FF,
+            0xFF92FF, 0xFFB6B6, 0xFFDB92, 0xFFFF49,
+            0xFFFF6D, 0xB6FF49, 0x92FF6D, 0x49FFDB,
+            0x92DBFF, 0x929292, 0x000000, 0x000000
+        };
+
+        for (int i = 0; i < 64; i++)
+        {
+            int r = pc10_palette[i] >> 16;
+            int g = (pc10_palette[i] & 0xff00) >> 8;
+            int b = pc10_palette[i] & 0xff;
+            FCEUD_SetPalette(i, r, g, b);
+            FCEUD_SetPalette(i + 64, r, g, b);
+            FCEUD_SetPalette(i + 128, r, g, b);
+            FCEUD_SetPalette(i + 192, r, g, b);
+        }
+    }
+    else if ([displayMode isEqualToString:@"NESCAP"])
+    {
+        unsigned int nescap_palette[64] =
+        {
+            0x646365, 0x001580, 0x1D0090, 0x380082,
+            0x56005D, 0x5A001A, 0x4F0900, 0x381B00,
+            0x1E3100, 0x003D00, 0x004100, 0x003A1B,
+            0x002F55, 0x000000, 0x000000, 0x000000,
+            0xAFADAF, 0x164BCA, 0x472AE7, 0x6B1BDB,
+            0x9617B0, 0x9F185B, 0x963001, 0x7B4800,
+            0x5A6600, 0x237800, 0x017F00, 0x00783D,
+            0x006C8C, 0x000000, 0x000000, 0x000000,
+            0xFFFFFF, 0x60A6FF, 0x8F84FF, 0xB473FF,
+            0xE26CFF, 0xF268C3, 0xEF7E61, 0xD89527,
+            0xBAB307, 0x81C807, 0x57D43D, 0x47CF7E,
+            0x4BC5CD, 0x4C4B4D, 0x000000, 0x000000,
+            0xFFFFFF, 0xC2E0FF, 0xD5D2FF, 0xE3CBFF,
+            0xF7C8FF, 0xFEC6EE, 0xFECEC6, 0xF6D7AE,
+            0xE9E49F, 0xD3ED9D, 0xC0F2B2, 0xB9F1CC,
+            0xBAEDED, 0xBAB9BB, 0x000000, 0x000000
+        };
+
+        for (int i = 0; i < 64; i++)
+        {
+            int r = nescap_palette[i] >> 16;
+            int g = (nescap_palette[i] & 0xff00) >> 8;
+            int b = nescap_palette[i] & 0xff;
+            FCEUD_SetPalette(i, r, g, b);
+            FCEUD_SetPalette(i + 64, r, g, b);
+            FCEUD_SetPalette(i + 128, r, g, b);
+            FCEUD_SetPalette(i + 192, r, g, b);
+        }
+    }
+    else if ([displayMode isEqualToString:@"Sony CXA2025AS"])
+    {
+        unsigned int cxa2025as_palette[64] =
+        {
+            0x585858, 0x00238C, 0x00139B, 0x2D0585,
+            0x5D0052, 0x7A0017, 0x7A0800, 0x5F1800,
+            0x352A00, 0x093900, 0x003F00, 0x003C22,
+            0x00325D, 0x000000, 0x000000, 0x000000,
+            0xA1A1A1, 0x0053EE, 0x153CFE, 0x6028E4,
+            0xA91D98, 0xD41E41, 0xD22C00, 0xAA4400,
+            0x6C5E00, 0x2D7300, 0x007D06, 0x007852,
+            0x0069A9, 0x000000, 0x000000, 0x000000,
+            0xFFFFFF, 0x1FA5FE, 0x5E89FE, 0xB572FE,
+            0xFE65F6, 0xFE6790, 0xFE773C, 0xFE9308,
+            0xC4B200, 0x79CA10, 0x3AD54A, 0x11D1A4,
+            0x06BFFE, 0x424242, 0x000000, 0x000000,
+            0xFFFFFF, 0xA0D9FE, 0xBDCCFE, 0xE1C2FE,
+            0xFEBCFB, 0xFEBDD0, 0xFEC5A9, 0xFED18E,
+            0xE9DE86, 0xC7E992, 0xA8EEB0, 0x95ECD9,
+            0x91E4FE, 0xACACAC, 0x000000, 0x000000
+        };
+
+        for (int i = 0; i < 64; i++)
+        {
+            int r = cxa2025as_palette[i] >> 16;
+            int g = (cxa2025as_palette[i] & 0xff00) >> 8;
+            int b = cxa2025as_palette[i] & 0xff;
+            FCEUD_SetPalette(i, r, g, b);
+            FCEUD_SetPalette(i + 64, r, g, b);
+            FCEUD_SetPalette(i + 128, r, g, b);
+            FCEUD_SetPalette(i + 192, r, g, b);
+        }
+    }
+    else if ([displayMode isEqualToString:@"Smooth (FBX)"])
+    {
+        unsigned int smoothfbx_palette[64] =
+        {
+            0x6A6D6A, 0x001380, 0x1E008A, 0x39007A,
+            0x550056, 0x5A0018, 0x4F1000, 0x3D1C00,
+            0x253200, 0x003D00, 0x004000, 0x003924,
+            0x002E55, 0x000000, 0x000000, 0x000000,
+            0xB9BCB9, 0x1850C7, 0x4B30E3, 0x7322D6,
+            0x951FA9, 0x9D285C, 0x983700, 0x7F4C00,
+            0x5E6400, 0x227700, 0x027E02, 0x007645,
+            0x006E8A, 0x000000, 0x000000, 0x000000,
+            0xFFFFFF, 0x68A6FF, 0x8C9CFF, 0xB586FF,
+            0xD975FD, 0xE377B9, 0xE58D68, 0xD49D29,
+            0xB3AF0C, 0x7BC211, 0x55CA47, 0x46CB81,
+            0x47C1C5, 0x4A4D4A, 0x000000, 0x000000,
+            0xFFFFFF, 0xCCEAFF, 0xDDDEFF, 0xECDAFF,
+            0xF8D7FE, 0xFCD6F5, 0xFDDBCF, 0xF9E7B5,
+            0xF1F0AA, 0xDAFAA9, 0xC9FFBC, 0xC3FBD7,
+            0xC4F6F6, 0xBEC1BE, 0x000000, 0x000000
+        };
+
+        for (int i = 0; i < 64; i++)
+        {
+            int r = smoothfbx_palette[i] >> 16;
+            int g = (smoothfbx_palette[i] & 0xff00) >> 8;
+            int b = smoothfbx_palette[i] & 0xff;
+            FCEUD_SetPalette(i, r, g, b);
+            FCEUD_SetPalette(i + 64, r, g, b);
+            FCEUD_SetPalette(i + 128, r, g, b);
+            FCEUD_SetPalette(i + 192, r, g, b);
+        }
+    }
+    else if ([displayMode isEqualToString:@"Wavebeam"])
+    {
+        unsigned int wavebeam_palette[64] =
+        {
+            0x6B6B6B, 0x001B88, 0x21009A, 0x40008C,
+            0x600067, 0x64001E, 0x590800, 0x481600,
+            0x283600, 0x004500, 0x004908, 0x00421D,
+            0x003659, 0x000000, 0x000000, 0x000000,
+            0xB4B4B4, 0x1555D3, 0x4337EF, 0x7425DF,
+            0x9C19B9, 0xAC0F64, 0xAA2C00, 0x8A4B00,
+            0x666B00, 0x218300, 0x008A00, 0x008144,
+            0x007691, 0x000000, 0x000000, 0x000000,
+            0xFFFFFF, 0x63B2FF, 0x7C9CFF, 0xC07DFE,
+            0xE977FF, 0xF572CD, 0xF4886B, 0xDDA029,
+            0xBDBD0A, 0x89D20E, 0x5CDE3E, 0x4BD886,
+            0x4DCFD2, 0x525252, 0x000000, 0x000000,
+            0xFFFFFF, 0xBCDFFF, 0xD2D2FF, 0xE1C8FF,
+            0xEFC7FF, 0xFFC3E1, 0xFFCAC6, 0xF2DAAD,
+            0xEBE3A0, 0xD2EDA2, 0xBCF4B4, 0xB5F1CE,
+            0xB6ECF1, 0xBFBFBF, 0x000000, 0x000000
+        };
+
+        for (int i = 0; i < 64; i++)
+        {
+            int r = wavebeam_palette[i] >> 16;
+            int g = (wavebeam_palette[i] & 0xff00) >> 8;
+            int b = wavebeam_palette[i] & 0xff;
+            FCEUD_SetPalette(i, r, g, b);
+            FCEUD_SetPalette(i + 64, r, g, b);
+            FCEUD_SetPalette(i + 128, r, g, b);
+            FCEUD_SetPalette(i + 192, r, g, b);
+        }
+    }
+}
+
+- (void)loadDisplayModeOptions
+{
+    // Restore palette
+    NSString *lastFormat = self.displayModeInfo[@"palette"];
+    if (lastFormat && ![lastFormat isEqualToString:@"Default — FCEUX"]) {
+        [self changeDisplayWithMode:lastFormat];
+    }
+
+    // Crop horizontal overscan
+    BOOL isHorizontalOverscanCropped = [self.displayModeInfo[@"cropHorizontalOverscan"] boolValue];
+    if (isHorizontalOverscanCropped) {
+        [self changeDisplayWithMode:@"Crop Horizontal"];
+    }
+
+    // Crop vertical overscan
+    BOOL isVerticalOverscanCropped = [self.displayModeInfo[@"cropVerticalOverscan"] boolValue];
+    if (isVerticalOverscanCropped) {
+        [self changeDisplayWithMode:@"Crop Vertical"];
     }
 }
 
