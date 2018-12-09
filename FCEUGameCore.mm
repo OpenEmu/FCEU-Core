@@ -479,8 +479,25 @@ const int NESMap[] = {JOY_UP, JOY_DOWN, JOY_LEFT, JOY_RIGHT, JOY_A, JOY_B, JOY_S
                 int address, value, compare;
                 int type = 1;
 
-                if (FCEUI_DecodeGG(cCode, &address, &value, &compare))
+                if (singleCode.length == 7 && [singleCode characterAtIndex:4] == ':')
+                {
+                    address = (int)strtoul([singleCode substringToIndex:4].UTF8String, NULL, 16);
+                    value = (int)strtoul([singleCode substringFromIndex:5].UTF8String, NULL, 16);
+                    compare = -1;
                     FCEUI_AddCheat(cCode, address, value, compare, type);
+                }
+                else if (singleCode.length == 10 && [singleCode characterAtIndex:4] == '?' && [singleCode characterAtIndex:7] == ':')
+                {
+                    address = (int)strtoul([singleCode substringToIndex:4].UTF8String, NULL, 16);
+                    compare = (int)strtoul([singleCode substringWithRange:NSMakeRange(5, 2)].UTF8String, NULL, 16);
+                    value = (int)strtoul([singleCode substringFromIndex:8].UTF8String, NULL, 16);
+                    FCEUI_AddCheat(cCode, address, value, compare, type);
+                }
+                else if (FCEUI_DecodeGG(cCode, &address, &value, &compare))
+                    FCEUI_AddCheat(cCode, address, value, compare, type);
+                // Does not work
+//                else if (FCEUI_DecodePAR(cCode, &address, &value, &compare, &type))
+//                    FCEUI_AddCheat(cCode, address, value, compare, type);
             }
         }
     }
