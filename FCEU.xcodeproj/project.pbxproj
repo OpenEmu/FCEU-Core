@@ -1046,59 +1046,6 @@
 		949BBA381A9EED5B007B49CC /* x6502.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x6502.h; sourceTree = "<group>"; };
 		949BBA391A9EED5B007B49CC /* x6502abbrev.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x6502abbrev.h; sourceTree = "<group>"; };
 		949BBA3A1A9EED5B007B49CC /* x6502struct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x6502struct.h; sourceTree = "<group>"; };
-		949BBA3C1A9EED5B007B49CC /* fceustr.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fceustr.cpp; path = "src/~attic/fceustr.cpp"; sourceTree = SOURCE_ROOT; };
-		949BBA3D1A9EED5B007B49CC /* fceustr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = fceustr.h; path = "src/~attic/fceustr.h"; sourceTree = SOURCE_ROOT; };
-		949BBA3E1A9EED5B007B49CC /* old fceultra docs.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; name = "old fceultra docs.zip"; path = "src/~attic/old fceultra docs.zip"; sourceTree = SOURCE_ROOT; };
-		949BBA401A9EED5B007B49CC /* dface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dface.h; sourceTree = "<group>"; };
-		949BBA411A9EED5B007B49CC /* dos-joystick.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dos-joystick.c"; sourceTree = "<group>"; };
-		949BBA421A9EED5B007B49CC /* dos-joystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dos-joystick.h"; sourceTree = "<group>"; };
-		949BBA431A9EED5B007B49CC /* dos-keyboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dos-keyboard.c"; sourceTree = "<group>"; };
-		949BBA441A9EED5B007B49CC /* dos-mouse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dos-mouse.c"; sourceTree = "<group>"; };
-		949BBA451A9EED5B007B49CC /* dos-sound.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dos-sound.c"; sourceTree = "<group>"; };
-		949BBA461A9EED5B007B49CC /* dos-sound.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dos-sound.h"; sourceTree = "<group>"; };
-		949BBA471A9EED5B007B49CC /* dos-video.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "dos-video.c"; sourceTree = "<group>"; };
-		949BBA481A9EED5B007B49CC /* dos-video.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dos-video.h"; sourceTree = "<group>"; };
-		949BBA491A9EED5B007B49CC /* dos.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dos.c; sourceTree = "<group>"; };
-		949BBA4A1A9EED5B007B49CC /* dos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dos.h; sourceTree = "<group>"; };
-		949BBA4B1A9EED5B007B49CC /* input.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = input.c; sourceTree = "<group>"; };
-		949BBA4C1A9EED5B007B49CC /* input.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = input.h; sourceTree = "<group>"; };
-		949BBA4D1A9EED5B007B49CC /* keyscan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = keyscan.h; sourceTree = "<group>"; };
-		949BBA4E1A9EED5B007B49CC /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
-		949BBA4F1A9EED5B007B49CC /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		949BBA501A9EED5B007B49CC /* sdl-icon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "sdl-icon.h"; sourceTree = "<group>"; };
-		949BBA511A9EED5B007B49CC /* sdl-joystick.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-joystick.c"; sourceTree = "<group>"; };
-		949BBA521A9EED5B007B49CC /* sdl-netplay.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-netplay.c"; sourceTree = "<group>"; };
-		949BBA531A9EED5B007B49CC /* sdl-netplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "sdl-netplay.h"; sourceTree = "<group>"; };
-		949BBA541A9EED5B007B49CC /* sdl-opengl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-opengl.c"; sourceTree = "<group>"; };
-		949BBA551A9EED5B007B49CC /* sdl-opengl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "sdl-opengl.h"; sourceTree = "<group>"; };
-		949BBA561A9EED5B007B49CC /* sdl-sound.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-sound.c"; sourceTree = "<group>"; };
-		949BBA571A9EED5B007B49CC /* sdl-throttle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-throttle.c"; sourceTree = "<group>"; };
-		949BBA581A9EED5B007B49CC /* sdl-video.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "sdl-video.c"; sourceTree = "<group>"; };
-		949BBA591A9EED5B007B49CC /* sdl-video.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "sdl-video.h"; sourceTree = "<group>"; };
-		949BBA5A1A9EED5B007B49CC /* sdl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sdl.c; sourceTree = "<group>"; };
-		949BBA5B1A9EED5B007B49CC /* sdl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sdl.h; sourceTree = "<group>"; };
-		949BBA5C1A9EED5B007B49CC /* throttle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = throttle.c; sourceTree = "<group>"; };
-		949BBA5D1A9EED5B007B49CC /* throttle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = throttle.h; sourceTree = "<group>"; };
-		949BBA5E1A9EED5B007B49CC /* unix-netplay.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = "unix-netplay.c"; sourceTree = "<group>"; };
-		949BBA5F1A9EED5B007B49CC /* unix-netplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "unix-netplay.h"; sourceTree = "<group>"; };
-		949BBA601A9EED5B007B49CC /* usage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = usage.h; sourceTree = "<group>"; };
-		949BBA611A9EED5B007B49CC /* vgatweak.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = vgatweak.c; sourceTree = "<group>"; };
-		949BBA631A9EED5B007B49CC /* convert.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = convert.c; sourceTree = "<group>"; };
-		949BBA641A9EED5B007B49CC /* convert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = convert.h; sourceTree = "<group>"; };
-		949BBA651A9EED5B007B49CC /* convert.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = convert.inc; sourceTree = "<group>"; };
-		949BBA661A9EED5B007B49CC /* convertgen */ = {isa = PBXFileReference; lastKnownFileType = file; path = convertgen; sourceTree = "<group>"; };
-		949BBA671A9EED5B007B49CC /* convertgen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = convertgen.c; sourceTree = "<group>"; };
-		949BBA691A9EED5B007B49CC /* dsound.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsound.c; sourceTree = "<group>"; };
-		949BBA6A1A9EED5B007B49CC /* oss.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = oss.c; sourceTree = "<group>"; };
-		949BBA6B1A9EED5B007B49CC /* oss.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = oss.h; sourceTree = "<group>"; };
-		949BBA6C1A9EED5B007B49CC /* osxcoreaudio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = osxcoreaudio.c; sourceTree = "<group>"; };
-		949BBA6D1A9EED5B007B49CC /* md5.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = md5.c; sourceTree = "<group>"; };
-		949BBA6E1A9EED5B007B49CC /* md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = md5.h; sourceTree = "<group>"; };
-		949BBA6F1A9EED5B007B49CC /* sexyal.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sexyal.c; sourceTree = "<group>"; };
-		949BBA701A9EED5B007B49CC /* sexyal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sexyal.h; sourceTree = "<group>"; };
-		949BBA711A9EED5B007B49CC /* smallc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = smallc.c; sourceTree = "<group>"; };
-		949BBA721A9EED5B007B49CC /* smallc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smallc.h; sourceTree = "<group>"; };
-		949BBA731A9EED5B007B49CC /* soundexp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = soundexp.cpp; path = "src/~attic/soundexp.cpp"; sourceTree = SOURCE_ROOT; };
 		B5008DAD0E8BFB3E005AECAF /* FCEUGameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FCEUGameCore.h; sourceTree = "<group>"; };
 		B5008DAE0E8BFB3E005AECAF /* FCEUGameCore.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FCEUGameCore.mm; sourceTree = "<group>"; };
 		C6D120EF171130A200E868A8 /* OpenEmuBase.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenEmuBase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1125,14 +1072,14 @@
 				08FB77AFFE84173DC02AAC07 /* Classes */,
 				32C88E010371C26100C91783 /* Other Sources */,
 				089C167CFE841241C02AAC07 /* Resources */,
-				089C1671FE841209C02AAC07 /* Frameworks and Libraries */,
+				089C1671FE841209C02AAC07 /* Frameworks */,
 				19C28FB8FE9D52D311CA2CBB /* Products */,
 			);
 			name = VisualBoyAdvance;
 			sourceTree = "<group>";
 			usesTabs = 0;
 		};
-		089C1671FE841209C02AAC07 /* Frameworks and Libraries */ = {
+		089C1671FE841209C02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				C6D120EF171130A200E868A8 /* OpenEmuBase.framework */,
@@ -1140,7 +1087,7 @@
 				1058C7ACFEA557BF11CA2CBB /* Linked Frameworks */,
 				1058C7AEFEA557BF11CA2CBB /* Other Frameworks */,
 			);
-			name = "Frameworks and Libraries";
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		089C167CFE841241C02AAC07 /* Resources */ = {
@@ -1286,7 +1233,6 @@
 				949BBA381A9EED5B007B49CC /* x6502.h */,
 				949BBA391A9EED5B007B49CC /* x6502abbrev.h */,
 				949BBA3A1A9EED5B007B49CC /* x6502struct.h */,
-				949BBA3B1A9EED5B007B49CC /* ~attic */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -2124,92 +2070,6 @@
 				949BBA2F1A9EED5B007B49CC /* xstring.h */,
 			);
 			path = utils;
-			sourceTree = "<group>";
-		};
-		949BBA3B1A9EED5B007B49CC /* ~attic */ = {
-			isa = PBXGroup;
-			children = (
-				949BBA3C1A9EED5B007B49CC /* fceustr.cpp */,
-				949BBA3D1A9EED5B007B49CC /* fceustr.h */,
-				949BBA3E1A9EED5B007B49CC /* old fceultra docs.zip */,
-				949BBA3F1A9EED5B007B49CC /* pc */,
-				949BBA621A9EED5B007B49CC /* sexyal */,
-				949BBA731A9EED5B007B49CC /* soundexp.cpp */,
-			);
-			path = "~attic";
-			sourceTree = "<absolute>";
-		};
-		949BBA3F1A9EED5B007B49CC /* pc */ = {
-			isa = PBXGroup;
-			children = (
-				949BBA401A9EED5B007B49CC /* dface.h */,
-				949BBA411A9EED5B007B49CC /* dos-joystick.c */,
-				949BBA421A9EED5B007B49CC /* dos-joystick.h */,
-				949BBA431A9EED5B007B49CC /* dos-keyboard.c */,
-				949BBA441A9EED5B007B49CC /* dos-mouse.c */,
-				949BBA451A9EED5B007B49CC /* dos-sound.c */,
-				949BBA461A9EED5B007B49CC /* dos-sound.h */,
-				949BBA471A9EED5B007B49CC /* dos-video.c */,
-				949BBA481A9EED5B007B49CC /* dos-video.h */,
-				949BBA491A9EED5B007B49CC /* dos.c */,
-				949BBA4A1A9EED5B007B49CC /* dos.h */,
-				949BBA4B1A9EED5B007B49CC /* input.c */,
-				949BBA4C1A9EED5B007B49CC /* input.h */,
-				949BBA4D1A9EED5B007B49CC /* keyscan.h */,
-				949BBA4E1A9EED5B007B49CC /* main.c */,
-				949BBA4F1A9EED5B007B49CC /* main.h */,
-				949BBA501A9EED5B007B49CC /* sdl-icon.h */,
-				949BBA511A9EED5B007B49CC /* sdl-joystick.c */,
-				949BBA521A9EED5B007B49CC /* sdl-netplay.c */,
-				949BBA531A9EED5B007B49CC /* sdl-netplay.h */,
-				949BBA541A9EED5B007B49CC /* sdl-opengl.c */,
-				949BBA551A9EED5B007B49CC /* sdl-opengl.h */,
-				949BBA561A9EED5B007B49CC /* sdl-sound.c */,
-				949BBA571A9EED5B007B49CC /* sdl-throttle.c */,
-				949BBA581A9EED5B007B49CC /* sdl-video.c */,
-				949BBA591A9EED5B007B49CC /* sdl-video.h */,
-				949BBA5A1A9EED5B007B49CC /* sdl.c */,
-				949BBA5B1A9EED5B007B49CC /* sdl.h */,
-				949BBA5C1A9EED5B007B49CC /* throttle.c */,
-				949BBA5D1A9EED5B007B49CC /* throttle.h */,
-				949BBA5E1A9EED5B007B49CC /* unix-netplay.c */,
-				949BBA5F1A9EED5B007B49CC /* unix-netplay.h */,
-				949BBA601A9EED5B007B49CC /* usage.h */,
-				949BBA611A9EED5B007B49CC /* vgatweak.c */,
-			);
-			name = pc;
-			path = "src/~attic/pc";
-			sourceTree = SOURCE_ROOT;
-		};
-		949BBA621A9EED5B007B49CC /* sexyal */ = {
-			isa = PBXGroup;
-			children = (
-				949BBA631A9EED5B007B49CC /* convert.c */,
-				949BBA641A9EED5B007B49CC /* convert.h */,
-				949BBA651A9EED5B007B49CC /* convert.inc */,
-				949BBA661A9EED5B007B49CC /* convertgen */,
-				949BBA671A9EED5B007B49CC /* convertgen.c */,
-				949BBA681A9EED5B007B49CC /* drivers */,
-				949BBA6D1A9EED5B007B49CC /* md5.c */,
-				949BBA6E1A9EED5B007B49CC /* md5.h */,
-				949BBA6F1A9EED5B007B49CC /* sexyal.c */,
-				949BBA701A9EED5B007B49CC /* sexyal.h */,
-				949BBA711A9EED5B007B49CC /* smallc.c */,
-				949BBA721A9EED5B007B49CC /* smallc.h */,
-			);
-			name = sexyal;
-			path = "src/~attic/sexyal";
-			sourceTree = SOURCE_ROOT;
-		};
-		949BBA681A9EED5B007B49CC /* drivers */ = {
-			isa = PBXGroup;
-			children = (
-				949BBA691A9EED5B007B49CC /* dsound.c */,
-				949BBA6A1A9EED5B007B49CC /* oss.c */,
-				949BBA6B1A9EED5B007B49CC /* oss.h */,
-				949BBA6C1A9EED5B007B49CC /* osxcoreaudio.c */,
-			);
-			path = drivers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
