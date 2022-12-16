@@ -37,12 +37,18 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 	}
 	else // BT_C
 	{
-		if (GameInfo->type == GIT_NSF) { //NSF Breakpoint keywords
+		int type = GIT_CART;
+
+		if (GameInfo)
+		{
+			type = GameInfo->type;
+		}
+		if (type == GIT_NSF) { //NSF Breakpoint keywords
 			if (strcmp(offsetBuffer,"LOAD") == 0) return (NSFHeader.LoadAddressLow | (NSFHeader.LoadAddressHigh<<8));
 			if (strcmp(offsetBuffer,"INIT") == 0) return (NSFHeader.InitAddressLow | (NSFHeader.InitAddressHigh<<8));
 			if (strcmp(offsetBuffer,"PLAY") == 0) return (NSFHeader.PlayAddressLow | (NSFHeader.PlayAddressHigh<<8));
 		}
-		else if (GameInfo->type == GIT_FDS) { //FDS Breakpoint keywords
+		else if (type == GIT_FDS) { //FDS Breakpoint keywords
 			if (strcmp(offsetBuffer,"NMI1") == 0) return (GetMem(0xDFF6) | (GetMem(0xDFF7)<<8));
 			if (strcmp(offsetBuffer,"NMI2") == 0) return (GetMem(0xDFF8) | (GetMem(0xDFF9)<<8));
 			if (strcmp(offsetBuffer,"NMI3") == 0) return (GetMem(0xDFFA) | (GetMem(0xDFFB)<<8));
@@ -208,11 +214,27 @@ int GetPRGAddress(int A){
 	int result;
 	if(A > 0xFFFF)
 		return -1;
-	result = &Page[A>>11][A]-PRGptr[0];
-	if((result > (int)PRGsize[0]) || (result < 0))
-		return -1;
-	else
-		return result;
+	if (GameInfo->type == GIT_FDS) {
+		if (A < 0xE000) {
+			result = &Page[A >> 11][A] - PRGptr[1];
+			if ((result > (int)PRGsize[1]) || (result < 0))
+				return -1;
+			else
+				return result;
+		} else {
+			result = &Page[A >> 11][A] - PRGptr[0];
+			if ((result > (int)PRGsize[0]) || (result < 0))
+				return -1;
+			else
+				return result + PRGsize[1];
+		}
+	} else {
+		result = &Page[A >> 11][A] - PRGptr[0];
+		if ((result > (int)PRGsize[0]) || (result < 0))
+			return -1;
+		else
+			return result;
+	}
 }
 
 /**
@@ -475,12 +497,24 @@ void LogCDData(uint8 *opcode, uint16 A, int size) {
 	}
 
 	if((j = GetPRGAddress(A)) != -1) {
-		if(!(cdloggerdata[j] & 2)) {
-			cdloggerdata[j] |= 2;
-			cdloggerdata[j] |=(A>>11)&0x0c;
-			cdloggerdata[j] |= memop;
-			datacount++;
-			if(!(cdloggerdata[j] & 1))undefinedcount--;
+		if (opwrite[opcode[0]] == 0) {
+			if (!(cdloggerdata[j] & 2)) {
+				cdloggerdata[j] |= 2;
+				cdloggerdata[j] |= (A >> 11) & 0x0c;
+				cdloggerdata[j] |= memop;
+				cdloggerdata[j] |= ((A & 0x8000) >> 8) ^ 0x80;	
+				datacount++;
+				if (!(cdloggerdata[j] & 1))undefinedcount--;
+			}
+		}  else {
+			if (cdloggerdata[j] & 1) {
+				codecount--;
+			}
+			if (cdloggerdata[j] & 2) {
+				datacount--;
+			}
+			if ((cdloggerdata[j] & 3) != 0) undefinedcount++;
+			cdloggerdata[j] = 0;
 		}
 	}
 }
