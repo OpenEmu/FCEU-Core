@@ -63,7 +63,7 @@ static int iNES_Init(int num);
 
 static int MapperNo = 0;
 
-static int iNES2 = 0;
+int iNES2 = 0;
 
 static DECLFR(TrainerRead) {
 	return(trainerpoo[A & 0x1FF]);
@@ -145,24 +145,14 @@ static void SetInput(void) {
 	static struct INPSEL moo[] =
 	{
 		{0x19b0a9f1,	SI_GAMEPAD,		SI_ZAPPER,		SIFC_NONE		},	// 6-in-1 (MGC-023)(Unl)[!]
-        {0xbc9bffcb,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Adventures of Bayou Billy, The (E)
-        {0x67751094,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Adventures of Bayou Billy, The (U)
 		{0x29de87af,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Aerobics Studio
 		{0xd89e5a67,	SI_UNSET,		SI_UNSET,		SIFC_ARKANOID	},	// Arkanoid (J)
 		{0x0f141525,	SI_UNSET,		SI_UNSET,		SIFC_ARKANOID	},	// Arkanoid 2(J)
 		{0x32fb0583,	SI_UNSET,		SI_ARKANOID,	SIFC_NONE		},	// Arkanoid(NES)
 		{0x60ad090a,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Athletic World
 		{0x48ca0ee1,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_BWORLD		},	// Barcode World
-        {0xbbe40dc4,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Baby Boomer (Unl)
-        {0x1f6660e6,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting (E)
-		{0x4318a2f8,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting (U)
-        {0x231bc76e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (Australia) (Unl)
-        {0xb79f2651,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (U) (Unl)
-        {0xc3c9d852,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Chiller (U) (Unl) [a1]
-        {0xdf31b364,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Cobra Mission (Asia) (Unl)
-        {0x4d68cfb1,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Crime Busters (Unknown) (Unl)
+		{0x4318a2f8,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Barker Bill's Trick Shooting
 		{0x6cca1c1f,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Dai Undoukai
-        {0xe145b441,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Day Dreamin' Davey
 		{0x24598791,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Duck Hunt
 		{0xd5d6eac4,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// Edu (As)
 		{0xe9a7fe9e,	SI_UNSET,		SI_MOUSE,		SIFC_NONE		},	// Educational Computer 2000
@@ -177,8 +167,6 @@ static void SetInput(void) {
 		{0x1545bd13,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_QUIZKING	},	// Gimme a Break ... 2
 		{0x4e959173,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gotcha! - The Sport!
 		{0xbeb8ab01,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gumshoe
-        {0x0afb395e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Gun Sight
-        {0xe85b4d3d,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Hit Marmot (Asia) (Unl)
 		{0xff24d794,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Hogan's Alley
 		{0x21f85681,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_HYPERSHOT	},	// Hyper Olympic (Gentei Ban)
 		{0x980be936,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_HYPERSHOT	},	// Hyper Olympic
@@ -188,21 +176,14 @@ static void SetInput(void) {
 		{0x2f128512,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Jogging Race
 		{0xbb33196f,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Keyboard Transformer
 		{0x8587ee00,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Keyboard Transformer
-        {0xb0480ae9,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Laser Invasion
-        {0x73fb55ac,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Lightgun Game 2 in 1 - Cosmocop + Cyber Monster (Asia) (Unl)
-        {0xddcbda16,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Lightgun Game 2 in 1 - Tough Cop + Super Tough Cop (Asia) (Unl)
 		{0x543ab532,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// LIKO Color Lines
 		{0x368c19a8,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// LIKO Study Cartridge
-        {0xdf3e45d2,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mad City
-        {0xaa9f9765,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mad City (Beta)
-        {0x61061352,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Master Shooter (Asia) (Unl)
 		{0x5ee6008e,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Mechanized Attack
 		{0x370ceb65,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Meiro Dai Sakusen
 		{0x3a1694f9,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_4PLAYER	},	// Nekketsu Kakutou Densetsu
 		{0x9d048ea4,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_OEKAKIDS	},	// Oeka Kids
-        {0x5529431f,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (E)
 		{0x2a6559a1,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (J)
-		{0xedc3662b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf (U)
+		{0xedc3662b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Operation Wolf
 		{0x912989dc,	SI_UNSET,		SI_UNSET,		SIFC_FKB		},	// Playbox BASIC
 		{0x9044550e,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERA	},	// Rairai Kyonshizu
 		{0xea90f3e2,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Running Stadium
@@ -224,13 +205,13 @@ static void SetInput(void) {
 		{0x41401c6d,	SI_UNSET,		SI_UNSET,		SIFC_SUBORKB	},	// SuporV40
 		{0x23d17f5e,	SI_GAMEPAD,		SI_ZAPPER,		SIFC_NONE		},	// The Lone Ranger
 		{0xc3c0811d,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_OEKAKIDS	},	// The two "Oeka Kids" games
-		{0x790b295b,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth (E)
-        {0xde8fd935,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth (U)
+		{0xde8fd935,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// To the Earth
 		{0x47232739,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_TOPRIDER	},	// Top Rider
 		{0x8a12a7d9,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FTRAINERB	},	// Totsugeki Fuuun Takeshi Jou
 		{0xb8b9aca3,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Wild Gunman
 		{0x5112dc21,	SI_UNSET,		SI_ZAPPER,		SIFC_NONE		},	// Wild Gunman
 		{0xaf4010ea,	SI_GAMEPAD,		SI_POWERPADB,	SIFC_UNSET		},	// World Class Track Meet
+		{0x67b126b9,	SI_GAMEPAD,		SI_GAMEPAD,		SIFC_FAMINETSYS },	// Famicom Network System
 		{0x00000000,	SI_UNSET,		SI_UNSET,		SIFC_UNSET		}
 	};
 	int x = 0;
@@ -252,7 +233,7 @@ static void SetInput(void) {
 
 struct BADINF {
 	uint64 md5partial;
-	char *name;
+	const char *name;
 	uint32 type;
 };
 
@@ -281,15 +262,15 @@ struct CHINF {
 };
 
 static const TMasterRomInfo sMasterRomInfo[] = {
-	{ 0x62b51b108a01d2beLL, "bonus=0" }, //4-in-1 (FK23C8021)[p1][!].nes
-	{ 0x8bb48490d8d22711LL, "bonus=0" }, //4-in-1 (FK23C8033)[p1][!].nes
-	{ 0xc75888d7b48cd378LL, "bonus=0" }, //4-in-1 (FK23C8043)[p1][!].nes
-	{ 0xf81a376fa54fdd69LL, "bonus=0" }, //4-in-1 (FK23Cxxxx, S-0210A PCB)[p1][!].nes
-	{ 0xa37eb9163e001a46LL, "bonus=0" }, //4-in-1 (FK23C8026) [p1][!].nes
-	{ 0xde5ce25860233f7eLL, "bonus=0" }, //4-in-1 (FK23C8045) [p1][!].nes
-	{ 0x5b3aa4cdc484a088LL, "bonus=0" }, //4-in-1 (FK23C8056) [p1][!].nes
-	{ 0x9342bf9bae1c798aLL, "bonus=0" }, //4-in-1 (FK23C8079) [p1][!].nes
-	{ 0x164eea6097a1e313LL, "busc=1" }, //Cybernoid - The Fighting Machine (U)[!].nes -- needs bus conflict emulation
+	{ 0x62b51b108a01d2beULL, "bonus=0" }, //4-in-1 (FK23C8021)[p1][!].nes
+	{ 0x8bb48490d8d22711ULL, "bonus=0" }, //4-in-1 (FK23C8033)[p1][!].nes
+	{ 0xc75888d7b48cd378ULL, "bonus=0" }, //4-in-1 (FK23C8043)[p1][!].nes
+	{ 0xf81a376fa54fdd69ULL, "bonus=0" }, //4-in-1 (FK23Cxxxx, S-0210A PCB)[p1][!].nes
+	{ 0xa37eb9163e001a46ULL, "bonus=0" }, //4-in-1 (FK23C8026) [p1][!].nes
+	{ 0xde5ce25860233f7eULL, "bonus=0" }, //4-in-1 (FK23C8045) [p1][!].nes
+	{ 0x5b3aa4cdc484a088ULL, "bonus=0" }, //4-in-1 (FK23C8056) [p1][!].nes
+	{ 0x9342bf9bae1c798aULL, "bonus=0" }, //4-in-1 (FK23C8079) [p1][!].nes
+	{ 0x164eea6097a1e313ULL, "busc=1" }, //Cybernoid - The Fighting Machine (U)[!].nes -- needs bus conflict emulation
 };
 const TMasterRomInfo* MasterRomInfo;
 TMasterRomInfoParams MasterRomInfoParams;
@@ -304,38 +285,38 @@ static void CheckHInfo(void) {
 
 	static uint64 savie[] =
 	{
-		0xc04361e499748382LL,	/* AD&D Heroes of the Lance */
-		0xb72ee2337ced5792LL,	/* AD&D Hillsfar */
-		0x2b7103b7a27bd72fLL,	/* AD&D Pool of Radiance */
-		0x498c10dc463cfe95LL,	/* Battle Fleet */
-		0x854d7947a3177f57LL,	/* Crystalis */
-		0x4a1f5336b86851b6LL,	/* DW */
-		0xb0bcc02c843c1b79LL,	/* DW */
-		0x2dcf3a98c7937c22LL,	/* DW 2 */
-		0x98e55e09dfcc7533LL,	/* DW 4*/
-		0x733026b6b72f2470LL,	/* Dw 3 */
-		0x6917ffcaca2d8466LL,	/* Famista '90 */
-		0x8da46db592a1fcf4LL,	/* Faria */
-		0xedba17a2c4608d20LL,	/* Final Fantasy */
-		0x91a6846d3202e3d6LL,	/* Final Fantasy */
-		0x012df596e2b31174LL,	/* Final Fantasy 1+2 */
-		0xf6b359a720549ecdLL,	/* Final Fantasy 2 */
-		0x5a30da1d9b4af35dLL,	/* Final Fantasy 3 */
-		0xd63dcc68c2b20adcLL,	/* Final Fantasy J */
-		0x2ee3417ba8b69706LL,	/* Hydlide 3*/
-		0xebbce5a54cf3ecc0LL,	/* Justbreed */
-		0x6a858da551ba239eLL,	/* Kaijuu Monogatari */
-		0x2db8f5d16c10b925LL,	/* Kyonshiizu 2 */
-		0x04a31647de80fdabLL,	/* Legend of Zelda */
-		0x94b9484862a26cbaLL,	/* Legend of Zelda */
-		0xa40666740b7d22feLL,	/* Mindseeker */
-		0x82000965f04a71bbLL,	/* Mirai Shinwa Jarvas */
-		0x77b811b2760104b9LL,	/* Mouryou Senki Madara */
-		0x11b69122efe86e8cLL,	/* RPG Jinsei Game */
-		0x9aa1dc16c05e7de5LL,	/* Startropics */
-		0x1b084107d0878bd0LL,	/* Startropics 2*/
-		0xa70b495314f4d075LL,	/* Ys 3 */
-		0x836c0ff4f3e06e45LL,	/* Zelda 2 */
+		0xc04361e499748382ULL,	/* AD&D Heroes of the Lance */
+		0xb72ee2337ced5792ULL,	/* AD&D Hillsfar */
+		0x2b7103b7a27bd72fULL,	/* AD&D Pool of Radiance */
+		0x498c10dc463cfe95ULL,	/* Battle Fleet */
+		0x854d7947a3177f57ULL,	/* Crystalis */
+		0x4a1f5336b86851b6ULL,	/* DW */
+		0xb0bcc02c843c1b79ULL,	/* DW */
+		0x2dcf3a98c7937c22ULL,	/* DW 2 */
+		0x98e55e09dfcc7533ULL,	/* DW 4*/
+		0x733026b6b72f2470ULL,	/* Dw 3 */
+		0x6917ffcaca2d8466ULL,	/* Famista '90 */
+		0x8da46db592a1fcf4ULL,	/* Faria */
+		0xedba17a2c4608d20ULL,	/* Final Fantasy */
+		0x91a6846d3202e3d6ULL,	/* Final Fantasy */
+		0x012df596e2b31174ULL,	/* Final Fantasy 1+2 */
+		0xf6b359a720549ecdULL,	/* Final Fantasy 2 */
+		0x5a30da1d9b4af35dULL,	/* Final Fantasy 3 */
+		0xd63dcc68c2b20adcULL,	/* Final Fantasy J */
+		0x2ee3417ba8b69706ULL,	/* Hydlide 3*/
+		0xebbce5a54cf3ecc0ULL,	/* Justbreed */
+		0x6a858da551ba239eULL,	/* Kaijuu Monogatari */
+		0x2db8f5d16c10b925ULL,	/* Kyonshiizu 2 */
+		0x04a31647de80fdabULL,	/* Legend of Zelda */
+		0x94b9484862a26cbaULL,	/* Legend of Zelda */
+		0xa40666740b7d22feULL,	/* Mindseeker */
+		0x82000965f04a71bbULL,	/* Mirai Shinwa Jarvas */
+		0x77b811b2760104b9ULL,	/* Mouryou Senki Madara */
+		0x11b69122efe86e8cULL,	/* RPG Jinsei Game */
+		0x9aa1dc16c05e7de5ULL,	/* Startropics */
+		0x1b084107d0878bd0ULL,	/* Startropics 2*/
+		0xa70b495314f4d075ULL,	/* Ys 3 */
+		0x836c0ff4f3e06e45ULL,	/* Zelda 2 */
 		0						/* Abandon all hope if the game has 0 in the lower 64-bits of its MD5 hash */
 	};
 
@@ -436,7 +417,7 @@ static void CheckHInfo(void) {
 		if (tofix & 1)
 			sprintf(gigastr + strlen(gigastr), "The mapper number should be set to %d.  ", MapperNo);
 		if (tofix & 2) {
-			char *mstr[3] = { "Horizontal", "Vertical", "Four-screen" };
+			const char *mstr[3] = { "Horizontal", "Vertical", "Four-screen" };
 			sprintf(gigastr + strlen(gigastr), "Mirroring should be set to \"%s\".  ", mstr[Mirroring & 3]);
 		}
 		if (tofix & 4)
@@ -459,17 +440,19 @@ typedef struct {
 //that are not in the power of 2 tends to come
 //in obscure mappers themselves which supports such
 //size
+//Cah4e3 25.10.19: iNES 2.0 attempts to cover all
+// boards including UNIF boards with non power 2 
+// total rom size (a lot of them with a couple of 
+// roms different sizes (may vary a lot)
+// so we need either add here ALL ines 2.0 mappers 
+// with not power2 roms or change logic here
+// to something more unified for ines 2.0 specific
 static int not_power2[] =
 {
-	53, 198, 228
+	53, 198, 228, 547
 };
-typedef struct {
-	char *name;
-	int32 number;
-	void (*init)(CartInfo *);
-} BMAPPINGLocal;
 
-static BMAPPINGLocal bmap[] = {
+BMAPPINGLocal bmap[] = {
 	{"NROM",				  0, NROM_Init},
 	{"MMC1",				  1, Mapper1_Init},
 	{"UNROM",				  2, UNROM_Init},
@@ -581,7 +564,7 @@ static BMAPPINGLocal bmap[] = {
 	{"FDS UNROM BOARD",		108, Mapper108_Init},
 //	{"",					109, Mapper109_Init},
 //	{"",					110, Mapper110_Init},
-//	{"",					111, Mapper111_Init},
+	{"Cheapocabra",			111, Mapper111_Init},
 	{"ASDER/NTDEC BOARD",	112, Mapper112_Init},
 	{"HACKER/SACHEN BOARD",	113, Mapper113_Init},
 	{"MMC3 SG PROT. A",		114, Mapper114_Init},
@@ -660,7 +643,7 @@ static BMAPPINGLocal bmap[] = {
 	{"",					187, Mapper187_Init},
 	{"",					188, Mapper188_Init},
 	{"",					189, Mapper189_Init},
-//	{"",					190, Mapper190_Init},
+	{"",					190, Mapper190_Init},
 	{"",					191, Mapper191_Init},
 	{"TW MMC3+VRAM Rev. B",	192, Mapper192_Init},
 	{"NTDEC TC-112",		193, Mapper193_Init},	// War in the Gulf
@@ -690,7 +673,7 @@ static BMAPPINGLocal bmap[] = {
 	{"",					217, Mapper217_Init},	// Redefined to a new Discrete BMC mapper
 //	{"",					218, Mapper218_Init},
 	{"UNLA9746",			219, UNLA9746_Init},
-	{"Debug Mapper",		220, UNLKS7057_Init},
+	{"Debug Mapper",		220, QTAi_Init},
 	{"UNLN625092",			221, UNLN625092_Init},
 	{"",					222, Mapper222_Init},
 //	{"",					223, Mapper223_Init},
@@ -740,6 +723,12 @@ static BMAPPINGLocal bmap[] = {
 	{"PEC-586 Computer",	257, UNLPEC586Init},
 	{"158B Prot Board",		258, UNL158B_Init},
 	{"F-15 MMC3 Based",		259, BMCF15_Init},
+	{"HP10xx/H20xx Boards",	260, BMCHPxx_Init},
+	{"810544-CA-1",			261, BMC810544CA1_Init},
+
+	{"Impact Soft MMC3 Flash Board",	406, Mapper406_Init },
+
+	{"KONAMI QTAi Board",	547, QTAi_Init },
 
 	{"",					0, NULL}
 };
@@ -747,12 +736,9 @@ static BMAPPINGLocal bmap[] = {
 int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	struct md5_context md5;
 
-	if (FCEU_fread(&head, 1, 16, fp) != 16)
-		return 0;
-
-	if (memcmp(&head, "NES\x1a", 4))
-		return 0;
-
+	if (FCEU_fread(&head, 1, 16, fp) != 16 || memcmp(&head, "NES\x1A", 4))
+		return LOADER_INVALID_FORMAT;
+	
 	head.cleanup();
 
 	memset(&iNESCart, 0, sizeof(iNESCart));
@@ -808,7 +794,8 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		if ((VROM = (uint8*)FCEU_malloc(VROM_size << 13)) == NULL) {
 			free(ROM);
 			ROM = NULL;
-			return 0;
+			FCEU_PrintError("Unable to allocate memory.");
+			return LOADER_HANDLED_ERROR;
 		}
 		memset(VROM, 0xFF, VROM_size << 13);
 	}
@@ -853,7 +840,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		FCEU_printf("\n");
 	}
 
-	char* mappername = "Not Listed";
+	const char* mappername = "Not Listed";
 
 	for (int mappertest = 0; mappertest < (sizeof bmap / sizeof bmap[0]) - 1; mappertest++) {
 		if (bmap[mappertest].number == MapperNo) {
@@ -875,7 +862,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		FCEU_printf(" Total VRAM size: %d\n", iNESCart.vram_size + iNESCart.battery_vram_size);
 		if(head.ROM_type & 2)
 		{
-			FCEU_printf(" WRAM backked by battery: %d\n", iNESCart.battery_wram_size);
+			FCEU_printf(" WRAM backed by battery: %d\n", iNESCart.battery_wram_size);
 			FCEU_printf(" VRAM backed by battery: %d\n", iNESCart.battery_vram_size);
 		}
 	}
@@ -909,8 +896,29 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	iNESCart.battery = (head.ROM_type & 2) ? 1 : 0;
 	iNESCart.mirror = Mirroring;
 
-	if (!iNES_Init(MapperNo))
+	int result = iNES_Init(MapperNo);
+	switch(result)
+	{
+	case 0:
+		goto init_ok;
+	case 1:
 		FCEU_PrintError("iNES mapper #%d is not supported at all.", MapperNo);
+		break;
+	case 2:
+		FCEU_PrintError("Unable to allocate CHR-RAM.");
+		break;
+	}
+	if (ROM) free(ROM);
+	if (VROM) free(VROM);
+	if (trainerpoo) free(trainerpoo);
+	if (ExtraNTARAM) free(ExtraNTARAM);
+	ROM = NULL;
+	VROM = NULL;
+	trainerpoo = NULL;
+	ExtraNTARAM = NULL;
+	return LOADER_HANDLED_ERROR;
+
+init_ok:
 
 	GameInfo->mappernum = MapperNo;
 	FCEU_LoadGameSave(&iNESCart);
@@ -925,12 +933,15 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	}
 
 	GameInterface = iNESGI;
+	currCartInfo = &iNESCart;
 	FCEU_printf("\n");
 
 	// since apparently the iNES format doesn't store this information,
 	// guess if the settings should be PAL or NTSC from the ROM name
 	// TODO: MD5 check against a list of all known PAL games instead?
-	if (OverwriteVidMode) {
+	if (iNES2) {
+		FCEUI_SetVidSystem(((head.TV_system & 3) == 1) ? 1 : 0);
+	} else if (OverwriteVidMode) {
 		if (strstr(name, "(E)") || strstr(name, "(e)")
 			|| strstr(name, "(Europe)") || strstr(name, "(PAL)")
 			|| strstr(name, "(F)") || strstr(name, "(f)")
@@ -940,11 +951,11 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		else
 			FCEUI_SetVidSystem(0);
 	}
-	return 1;
+	return LOADER_OK;
 }
 
 // bbit edited: the whole function below was added
-int iNesSave() {
+int iNesSave(void) {
 	char name[2048];
 
 	strcpy(name, LoadedRomFName);
@@ -955,7 +966,7 @@ int iNesSave() {
 	return iNesSaveAs(name);
 }
 
-int iNesSaveAs(char* name)
+int iNesSaveAs(const char* name)
 {
 	//adelikat: TODO: iNesSave() and this have pretty much the same code, outsource the common code to a single function
 	//caitsith2: done. iNesSave() now gets filename and calls iNesSaveAs with that filename.
@@ -990,7 +1001,7 @@ int iNesSaveAs(char* name)
 }
 
 //para edit: added function below
-char *iNesShortFName() {
+char *iNesShortFName(void) {
 	char *ret;
 
 	if (!(ret = strrchr(LoadedRomFName, '\\')))
@@ -1011,7 +1022,7 @@ static int iNES_Init(int num) {
 
 	while (tmp->init) {
 		if (num == tmp->number) {
-			UNIFchrrama = 0;	// need here for compatibility with UNIF mapper code
+			UNIFchrrama = NULL;	// need here for compatibility with UNIF mapper code
 			if (!VROM_size) {
 				if(!iNESCart.ines2)
 				{
@@ -1031,19 +1042,31 @@ static int iNES_Init(int num) {
 				{
 					CHRRAMSize = iNESCart.battery_vram_size + iNESCart.vram_size;
 				}
-				if ((VROM = (uint8*)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
-				FCEU_MemoryRand(VROM, CHRRAMSize);
-
-				UNIFchrrama = VROM;
-				SetupCartCHRMapping(0, VROM, CHRRAMSize, 1);
-				AddExState(VROM, CHRRAMSize, 0, "CHRR");
+				if (CHRRAMSize > 0)
+				{
+					int mCHRRAMSize = (CHRRAMSize < 1024) ? 1024 : CHRRAMSize; // VPage has a resolution of 1k banks, ensure minimum allocation to prevent malicious access from NES software
+					if ((UNIFchrrama = VROM = (uint8*)FCEU_dmalloc(mCHRRAMSize)) == NULL) return 2;
+					FCEU_MemoryRand(VROM, CHRRAMSize);
+					SetupCartCHRMapping(0, VROM, CHRRAMSize, 1);
+					AddExState(VROM, CHRRAMSize, 0, "CHRR");
+				}
+				else {
+					// mapper 256 (OneBus) has not CHR-RAM _and_ has not CHR-ROM region in iNES file
+					// so zero-sized CHR should be supported at least for this mapper
+					VROM = NULL;
+				}
 			}
 			if (head.ROM_type & 8)
-				AddExState(ExtraNTARAM, 2048, 0, "EXNR");
+			{
+				if (ExtraNTARAM != NULL)
+				{
+					AddExState(ExtraNTARAM, 2048, 0, "EXNR");
+				}
+			}
 			tmp->init(&iNESCart);
-			return 1;
+			return 0;
 		}
 		tmp++;
 	}
-	return 0;
+	return 1;
 }

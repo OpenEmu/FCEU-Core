@@ -57,8 +57,22 @@ static SFORMAT N106_StateRegs[] = {
 	{ PRG, 3, "PRG" },
 	{ CHR, 8, "CHR" },
 	{ NTAPage, 4, "NTA" },
+	{ &gorfus, 1, "GORF" },
+	{ &dopol, 1, "DOPO" },
+	{ &gorko, 1, "GORK" },
 	{ 0 }
 };
+
+static void SyncMirror()
+{
+	switch(gorko) {
+	case 0: setmirror(MI_0); break;
+	case 1: setmirror(MI_V); break;
+	case 2: setmirror(MI_H); break;
+	case 3: setmirror(MI_0); break;
+	}
+	
+}
 
 static void SyncPRG(void) {
 	setprg8(0x8000, PRG[0]);
@@ -143,7 +157,10 @@ static void FixCache(int a, int V) {
 	case 0x02: FreqCache[w] &= ~0x0000FF00; FreqCache[w] |= V << 8; break;
 	case 0x04:
 		FreqCache[w] &= ~0x00030000; FreqCache[w] |= (V & 3) << 16;
-		LengthCache[w] = (8 - ((V >> 2) & 7)) << 2;
+// something wrong here http://www.romhacking.net/forum/index.php?topic=21907.msg306903#msg306903
+//		LengthCache[w] = (8 - ((V >> 2) & 7)) << 2;
+// fix be like in https://github.com/SourMesen/Mesen/blob/cda0a0bdcb5525480784f4b8c71de6fc7273b570/Core/Namco163Audio.h#L61
+		LengthCache[w] = 256 - (V & 0xFC);
 		break;
 	case 0x07: EnvCache[w] = (double)(V & 0xF) * 576716; break;
 	}
@@ -179,8 +196,11 @@ static DECLFW(Mapper19_write) {
 			X6502_IRQEnd(FCEU_IQEXT);
 			break;
 		case 0xE000:
-			gorko = V & 0xC0;
 			PRG[0] = V & 0x3F;
+			if(is210) {
+				gorko = V>>6;
+				SyncMirror();
+			}
 			SyncPRG();
 			break;
 		case 0xE800:
@@ -331,6 +351,7 @@ static void DoNamcoSound(int32 *Wave, int Count) {
 
 static void Mapper19_StateRestore(int version) {
 	SyncPRG();
+	SyncMirror();
 	FixNTAR();
 	FixCRR();
 	int x;
@@ -382,8 +403,8 @@ static void N106_Power(void) {
 	FixCRR();
 
 	if (!battery) {
-		FCEU_dwmemset(WRAM, 0, 8192);
-		FCEU_dwmemset(IRAM, 0, 128);
+		FCEU_MemoryRand(WRAM, sizeof(WRAM), true);
+		FCEU_MemoryRand(IRAM, sizeof(IRAM), true);
 	}
 	for (x = 0x40; x < 0x80; x++)
 		FixCache(x, IRAM[x]);
@@ -401,6 +422,8 @@ void Mapper19_Init(CartInfo *info) {
 	if (FSettings.SndRate)
 		Mapper19_ESI();
 
+	FCEU_MemoryRand(WRAM, sizeof(WRAM), true);
+	FCEU_MemoryRand(IRAM, sizeof(IRAM), true);
 	AddExState(WRAM, 8192, 0, "WRAM");
 	AddExState(IRAM, 128, 0, "IRAM");
 	AddExState(N106_StateRegs, ~0, 0, 0);
@@ -422,6 +445,7 @@ void Mapper210_Init(CartInfo *info) {
 	is210 = 1;
 	GameStateRestore = Mapper210_StateRestore;
 	info->Power = N106_Power;
+	FCEU_MemoryRand(WRAM, sizeof(WRAM), true);
 	AddExState(WRAM, 8192, 0, "WRAM");
 	AddExState(N106_StateRegs, ~0, 0, 0);
 }

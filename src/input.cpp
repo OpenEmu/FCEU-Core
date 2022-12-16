@@ -64,6 +64,8 @@ extern INPUTC *FCEU_InitPowerpadB(int w);
 extern INPUTC *FCEU_InitArkanoid(int w);
 extern INPUTC *FCEU_InitMouse(int w);
 extern INPUTC *FCEU_InitSNESMouse(int w);
+extern INPUTC *FCEU_InitVirtualBoy(int w);
+extern INPUTC *FCEU_InitLCDCompZapper(int w);
 
 extern INPUTCFC *FCEU_InitArkanoidFC(void);
 extern INPUTCFC *FCEU_InitSpaceShadow(void);
@@ -77,6 +79,7 @@ extern INPUTCFC *FCEU_InitFamilyTrainerA(void);
 extern INPUTCFC *FCEU_InitFamilyTrainerB(void);
 extern INPUTCFC *FCEU_InitOekaKids(void);
 extern INPUTCFC *FCEU_InitTopRider(void);
+extern INPUTCFC *FCEU_InitFamiNetSys(void);
 extern INPUTCFC *FCEU_InitBarcodeWorld(void);
 //---------------
 
@@ -370,7 +373,39 @@ static void StrobeSNES(int w)
 
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+//--------Hori 4 player driver for expansion port--------
+static uint8 Hori4ReadBit[2];
+static void StrobeHori4(void)
+{
+	Hori4ReadBit[0] = Hori4ReadBit[1] = 0;
+}
 
+static uint8 ReadHori4(int w, uint8 ret)
+{
+	ret &= 1;
+
+	if (Hori4ReadBit[w] < 8)
+	{
+		ret |= ((joy[w] >> (Hori4ReadBit[w])) & 1) << 1;
+	}
+	else if (Hori4ReadBit[w] < 16)
+	{
+		ret |= ((joy[2 + w] >> (Hori4ReadBit[w] - 8)) & 1) << 1;
+	}
+	else if (Hori4ReadBit[w] < 24)
+	{
+		ret |= (((w ? 0x10 : 0x20) >> (7 - (Hori4ReadBit[w] - 16))) & 1) << 1;
+	}
+	if (Hori4ReadBit[w] >= 24) ret |= 2;
+	else Hori4ReadBit[w]++;
+
+	return(ret);
+}
+
+static INPUTCFC HORI4C = { ReadHori4,0,StrobeHori4,0,0,0 };
+//------------------
+
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 static INPUTC GPC={ReadGP,0,StrobeGP,UpdateGP,0,0,LogGP,LoadGP};
 static INPUTC GPCVS={ReadGPVS,0,StrobeGP,UpdateGP,0,0,LogGP,LoadGP};
@@ -478,7 +513,14 @@ static void SetInputStuff(int port)
 	case SI_SNES_MOUSE:
 		joyports[port].driver=FCEU_InitSNESMouse(port);
 		break;
+	case SI_VIRTUALBOY:
+		joyports[port].driver=FCEU_InitVirtualBoy(port);
+		break;
+	case SI_LCDCOMP_ZAPPER:
+		joyports[port].driver = FCEU_InitLCDCompZapper(port);
+		break;
 	case SI_NONE:
+	case SI_UNSET:
 		joyports[port].driver=&DummyJPort;
 		break;
 	}
@@ -489,6 +531,7 @@ static void SetInputStuffFC()
 	switch(portFC.type)
 	{
 	case SIFC_NONE:
+	case SIFC_UNSET:
 		portFC.driver=&DummyPortFC;
 		break;
 	case SIFC_ARKANOID:
@@ -533,6 +576,13 @@ static void SetInputStuffFC()
 		break;
 	case SIFC_TOPRIDER:
 		portFC.driver=FCEU_InitTopRider();
+		break;
+	case SIFC_FAMINETSYS:
+		portFC.driver = FCEU_InitFamiNetSys();
+		break;
+	case SIFC_HORI4PLAYER:
+		portFC.driver = &HORI4C;
+		memset(&Hori4ReadBit, 0, sizeof(Hori4ReadBit));
 		break;
 	}
 }
@@ -713,7 +763,7 @@ const char* FCEUI_CommandTypeNames[]=
 	"TAS Editor",
 };
 
-static void CommandUnImpl(void);
+//static void CommandUnImpl(void);
 static void CommandToggleDip(void);
 static void CommandStateLoad(void);
 static void CommandStateSave(void);
@@ -745,7 +795,7 @@ static void DebuggerStepInto(void);
 static void FA_SkipLag(void);
 static void OpenRom(void);
 static void CloseRom(void);
-static void ReloadRom(void);
+void ReloadRom(void);
 static void MovieSubtitleToggle(void);
 static void UndoRedoSavestate(void);
 static void FCEUI_DoExit(void);
@@ -813,9 +863,18 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_MOVIE_RECORD_TO,				EMUCMDTYPE_MOVIE,	FCEUD_MovieRecordTo,			0, 0, "Record Movie To...", 0 },
 	{ EMUCMD_MOVIE_REPLAY_FROM,				EMUCMDTYPE_MOVIE,	FCEUD_MovieReplayFrom,			0, 0, "Play Movie From...", 0 },
 	{ EMUCMD_MOVIE_PLAY_FROM_BEGINNING,		EMUCMDTYPE_MOVIE,	FCEUI_MoviePlayFromBeginning,	0, 0, "Play Movie From Beginning", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_MOVIE_TOGGLE_RECORDING,		EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleRecording,		0, 0, "Toggle Movie Recording/Playing", 0 },
+	{ EMUCMD_MOVIE_INSERT_1_FRAME,			EMUCMDTYPE_MOVIE,	FCEUI_MovieInsertFrame,			0, 0, "Insert 1 Frame To Movie", 0 },
+	{ EMUCMD_MOVIE_DELETE_1_FRAME,			EMUCMDTYPE_MOVIE,	FCEUI_MovieDeleteFrame,			0, 0, "Delete 1 Frame From Movie", 0 },
+	{ EMUCMD_MOVIE_TRUNCATE,				EMUCMDTYPE_MOVIE,	FCEUI_MovieTruncate,			0, 0, "Truncate Movie At Current Frame", 0 },
 	{ EMUCMD_MOVIE_STOP,					EMUCMDTYPE_MOVIE,	FCEUI_StopMovie,				0, 0, "Stop Movie", 0 },
 	{ EMUCMD_MOVIE_READONLY_TOGGLE,			EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleReadOnly,		0, 0, "Toggle Read-Only", EMUCMDFLAG_TASEDITOR },
-	{ EMUCMD_MOVIE_FRAME_DISPLAY_TOGGLE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleFrameDisplay,	0, 0, "Toggle Frame Display", EMUCMDFLAG_TASEDITOR },										 
+	{ EMUCMD_MOVIE_NEXT_RECORD_MODE,		EMUCMDTYPE_MOVIE,	FCEUI_MovieNextRecordMode,		0, 0, "Next Record Mode", 0 },
+	{ EMUCMD_MOVIE_PREV_RECORD_MODE,		EMUCMDTYPE_MOVIE,	FCEUI_MoviePrevRecordMode,		0, 0, "Prev Record Mode", 0 },
+	{ EMUCMD_MOVIE_RECORD_MODE_TRUNCATE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieRecordModeTruncate,	0, 0, "Record Mode Truncate", 0 },
+	{ EMUCMD_MOVIE_RECORD_MODE_OVERWRITE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieRecordModeOverwrite,	0, 0, "Record Mode Overwrite", 0 },
+	{ EMUCMD_MOVIE_RECORD_MODE_INSERT,		EMUCMDTYPE_MOVIE,	FCEUI_MovieRecordModeInsert,	0, 0, "Record Mode Insert", 0 },
+	{ EMUCMD_MOVIE_FRAME_DISPLAY_TOGGLE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleFrameDisplay,	0, 0, "Toggle Frame Display", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_MOVIE_INPUT_DISPLAY_TOGGLE,	EMUCMDTYPE_MISC,	FCEUI_ToggleInputDisplay,		0, 0, "Toggle Input Display", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_MOVIE_ICON_DISPLAY_TOGGLE,		EMUCMDTYPE_MISC,	FCEUD_ToggleStatusIcon,			0, 0, "Toggle Status Icon", EMUCMDFLAG_TASEDITOR },
 
@@ -921,10 +980,11 @@ void FCEUI_HandleEmuCommands(TestCommandState* testfn)
 	}
 }
 
-static void CommandUnImpl(void)
-{
-	FCEU_DispMessage("command '%s' unimplemented.",0, FCEUI_CommandTable[i].name);
-}
+// Function not currently used
+//static void CommandUnImpl(void)
+//{
+//	FCEU_DispMessage("command '%s' unimplemented.",0, FCEUI_CommandTable[i].name);
+//}
 
 static void CommandToggleDip(void)
 {
@@ -1108,8 +1168,8 @@ static void LaunchCodeDataLogger(void)
 static void LaunchCheats(void)
 {
 #ifdef WIN32
-	extern HWND pwindow;
-	ConfigCheats(pwindow);
+	extern HWND hCheat;
+	ConfigCheats(hCheat);
 #endif
 }
 
@@ -1232,7 +1292,7 @@ static void CloseRom(void)
 #endif
 }
 
-static void ReloadRom(void)
+void ReloadRom(void)
 {
 #ifdef WIN32
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))

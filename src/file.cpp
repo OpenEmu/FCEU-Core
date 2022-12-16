@@ -33,7 +33,11 @@
 #include "utils/memory.h"
 #include "utils/md5.h"
 #ifdef _SYSTEM_MINIZIP
+#ifdef __linux
 #include <minizip/unzip.h>
+#else // Apple Most Likely
+#include <unzip.h>
+#endif
 #else
 #include "utils/unzip.h"
 #endif
@@ -46,7 +50,7 @@
 #include "utils/xstring.h"
 
 #ifndef WIN32
-//#include <zlib.h>
+#include <zlib.h>
 #endif
 
 using namespace std;
@@ -104,12 +108,14 @@ void ApplyIPS(FILE *ips, FCEUFILE* fp)
 			if((offset+size)>(uint32)fp->size)
 			{
 				// Probably a little slow.
-				buf=(char *)realloc(buf,offset+size);
-				if(!buf)
+				char *newbuf=(char *)realloc(buf,offset+size);
+				if(!newbuf)
 				{
+					free(buf); buf=NULL;
 					FCEU_printf("  Oops.  IPS patch %d(type RLE) goes beyond end of file.  Could not allocate memory.\n",count);
 					goto end;
 				}
+				buf=newbuf;
 				memset(buf+fp->size,0,offset+size-fp->size);
 				fp->size=offset+size;
 			}
@@ -127,12 +133,14 @@ void ApplyIPS(FILE *ips, FCEUFILE* fp)
 			if((offset+size)>(uint32)fp->size)
 			{
 				// Probably a little slow.
-				buf=(char *)realloc(buf,offset+size);
-				if(!buf)
+				char *newbuf=(char *)realloc(buf,offset+size);
+				if(!newbuf)
 				{
+					free(buf); buf=NULL;
 					FCEU_printf("  Oops.  IPS patch %d(type normal) goes beyond end of file.  Could not allocate memory.\n",count);
 					goto end;
 				}
+				buf=newbuf;
 				memset(buf+fp->size,0,offset+size-fp->size);
 			}
 			fread(buf+offset,1,size,ips);
@@ -256,14 +264,14 @@ zpfail:
 	return 0;
 }
 
-FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext, int index, const char** extensions)
+FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, const char *mode, char *ext, int index, const char** extensions, int* userCancel)
 {
 	FILE *ipsfile=0;
 	FCEUFILE *fceufp=0;
 
-	bool read = (std::string)mode == "rb";
-	bool write = (std::string)mode == "wb";
-	if((read&&write) || (!read&&!write))
+	bool read = !strcmp(mode, "rb");
+	bool write = !strcmp(mode, "wb");
+	if(read && write || !read && !write)
 	{
 		FCEU_PrintError("invalid file open mode specified (only wb and rb are supported)");
 		return 0;
@@ -284,10 +292,15 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext
 		{
 			//if the archive contained no files, try to open it the old fashioned way
 			EMUFILE_FILE* fp = FCEUD_UTF8_fstream(fileToOpen,mode);
-			if(!fp || (fp->get_fp() == NULL))
+			if(!fp)
+				return 0;
+			if (fp->get_fp() == NULL)
 			{
+				//fp is new'ed so it has to be deleted
+				delete fp;
 				return 0;
 			}
+
 
 			//try to read a zip file
 			{
@@ -355,11 +368,11 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext
 			//open an archive file
 			if(archive == "")
 				if(index != -1)
-					fceufp = FCEUD_OpenArchiveIndex(asr, fileToOpen, index);
+					fceufp = FCEUD_OpenArchiveIndex(asr, fileToOpen, index, userCancel);
 				else
-					fceufp = FCEUD_OpenArchive(asr, fileToOpen, 0);
+					fceufp = FCEUD_OpenArchive(asr, fileToOpen, 0, userCancel);
 			else
-				fceufp = FCEUD_OpenArchive(asr, archive, &fname);
+				fceufp = FCEUD_OpenArchive(asr, archive, &fname, userCancel);
 
 			if(!fceufp) return 0;
 
@@ -452,6 +465,11 @@ void FCEUI_SetBaseDirectory(std::string const & dir)
 {
 	BaseDirectory = dir;
 }
+/// Gets the base directory
+const char *FCEUI_GetBaseDirectory(void)
+{
+	return BaseDirectory.c_str();
+}
 
 static char *odirs[FCEUIOD__COUNT]={0,0,0,0,0,0,0,0,0,0,0,0,0};     // odirs, odors. ^_^
 
@@ -470,9 +488,9 @@ void FCEUI_SetDirOverride(int which, char *n)
 		va_list ap;
 		int ret;
 
-		va_start(ap,fmt);
 		if(!(*strp=(char*)FCEU_dmalloc(2048))) //mbg merge 7/17/06 cast to char*
 			return(0);
+		va_start(ap,fmt);
 		ret=vsnprintf(*strp,2048,fmt,ap);
 		va_end(ap);
 		return(ret);

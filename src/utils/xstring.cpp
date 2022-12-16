@@ -157,7 +157,7 @@ int chr_replace(char *str, char search, char replace) {
 
 ///Replaces all instances of 'search' with 'replace'
 ///Returns number of sub-strings modified, or -1 on error
-int str_replace(char *str, char *search, char *replace) {
+int str_replace(char *str, const char *search, const char *replace) {
 	unsigned int i=0,j=0; //mbg merge 7/17/06 changed to unsigned int
 	int searchlen,replacelen;
 	char *astr;
@@ -231,8 +231,8 @@ std::string BytesToString(const void* data, int len)
 			{
 				Base64Table[ input[0] >> 2 ],
 				Base64Table[ ((input[0] & 0x03) << 4) | (input[1] >> 4) ],
-				n<2 ? '=' : Base64Table[ ((input[1] & 0x0F) << 2) | (input[2] >> 6) ],
-				n<3 ? '=' : Base64Table[ input[2] & 0x3F ]
+				static_cast<unsigned char> (n<2 ? '=' : Base64Table[ ((input[1] & 0x0F) << 2) | (input[2] >> 6) ]),
+				static_cast<unsigned char> (n<3 ? '=' : Base64Table[ input[2] & 0x3F ])
 			};
 			ret.append(output, output+4);
 		}
@@ -296,9 +296,9 @@ bool StringToBytes(const std::string& str, void* data, int len)
 			}
 			unsigned char outpacket[3] =
 			{
-				(converted[0] << 2) | (converted[1] >> 4),
-				(converted[1] << 4) | (converted[2] >> 2),
-				(converted[2] << 6) | (converted[3])
+				static_cast<unsigned char>((converted[0] << 2) | (converted[1] >> 4)),
+				static_cast<unsigned char>((converted[1] << 4) | (converted[2] >> 2)),
+				static_cast<unsigned char>((converted[2] << 6) | (converted[3]))
 			};
 			int outlen = (input[2] == '=') ? 1 : (input[3] == '=' ? 2 : 3);
 			if(outlen > len) outlen = len;

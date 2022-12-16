@@ -88,13 +88,13 @@ static int PAL_LUT(uint32 *buffer, int index, int x, int y)
 
 static void CalculateShift(uint32 *CBM, int *cshiftr, int *cshiftl)
 {
-	int a,x,z,y;
+	int a,x,z;
 	cshiftl[0]=cshiftl[1]=cshiftl[2]=-1;
 	for(a=0;a<3;a++)
 	{
-		for(x=0,y=-1,z=0;x<32;x++)
+		for(x=0,z=0;x<32;x++)
 		{
-			if(CBM[a]&(1<<x))
+			if(CBM[a]&(1u<<x))
 			{
 				if(cshiftl[a]==-1) cshiftl[a]=x;
 				z++;
@@ -218,6 +218,11 @@ int InitBlitToHigh(int b, uint32 rmask, uint32 gmask, uint32 bmask, int efx, int
 		return(0);
 	
 	//allocate adequate room for 32bpp palette
+	if ( palettetranslate )
+	{
+		free(palettetranslate);
+		palettetranslate=NULL;
+	}
 	palettetranslate=(uint32*)FCEU_dmalloc(256*4 + 512*4);
 	
 	if(!palettetranslate)
@@ -715,7 +720,7 @@ void Blit8ToHigh(uint8 *src, uint8 *dest, int xr, int yr, int pitch, int xscale,
 					newindex = (*src&63) | (deemph*64);
 					newindex += 256;
 
-					if(GameInfo->type==GIT_NSF)
+					if(GameInfo && GameInfo->type==GIT_NSF)
 					{
 						*d++ = palettetranslate[temp];
 						*d++ = palettetranslate[temp];
@@ -807,11 +812,13 @@ void Blit8ToHigh(uint8 *src, uint8 *dest, int xr, int yr, int pitch, int xscale,
 			switch(Bpp)
 			{
 			case 4:
-				if ( nes_ntsc && GameInfo->type!=GIT_NSF) {
+				if ( nes_ntsc && GameInfo && GameInfo->type!=GIT_NSF) {
 					int outxr = 301;
 					//if(xr == 282) outxr = 282; //hack for windows
 					burst_phase ^= 1;
-					nes_ntsc_blit( nes_ntsc, (unsigned char*)src, xr, burst_phase, (PPU[1] >> 5) << 6, xr, yr, ntscblit, (2*outxr) * Bpp );
+
+					u8* srcD = XDBuf + (src-XBuf); // get deemphasis buffer
+					nes_ntsc_blit( nes_ntsc, (unsigned char*)src, (unsigned char*)srcD, xr, burst_phase, xr, yr, ntscblit, (2*outxr) * Bpp );
 
 					const uint8 *in = ntscblit + (Bpp * xscale);
 					uint8 *out = dest;

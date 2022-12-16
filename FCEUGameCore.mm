@@ -796,6 +796,7 @@ bool turbo = false;
 bool swapDuty = 0; // some Famicom and NES clones had duty cycle bits swapped
 int dendy = 0;
 int closeFinishedMovie = 0;
+int KillFCEUXonFrame = 0;
 int FCEUD_ShowStatusIcon(void) {return 0;}
 int FCEUD_SendData(void *data, uint32 len) {return 1;}
 int FCEUD_RecvData(void *data, uint32 len) {return 1;}
@@ -832,6 +833,8 @@ bool FCEUI_AviIsRecording(void) {return false;}
 bool FCEUI_AviDisableMovieMessages() {return true;}
 FCEUFILE *FCEUD_OpenArchiveIndex(ArchiveScanRecord &asr, std::string &fname, int innerIndex) {return 0;}
 FCEUFILE *FCEUD_OpenArchive(ArchiveScanRecord &asr, std::string &fname, std::string *innerFilename) {return 0;}
+FCEUFILE *FCEUD_OpenArchiveIndex(ArchiveScanRecord &asr, std::string &fname, int innerIndex, int *userCancel) {return 0;}
+FCEUFILE *FCEUD_OpenArchive(ArchiveScanRecord &asr, std::string &fname, std::string *innerFilename, int *userCancel) {return 0;}
 ArchiveScanRecord FCEUD_ScanArchive(std::string fname) { return ArchiveScanRecord(); }
 void GetMouseData(uint32 (&md)[3]) {}
 void FCEUD_PrintError(const char *s)

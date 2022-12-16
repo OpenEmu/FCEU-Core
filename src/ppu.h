@@ -11,6 +11,7 @@ extern void (*GameHBIRQHook)(void), (*GameHBIRQHook2)(void);
 
 int newppu_get_scanline();
 int newppu_get_dot();
+void newppu_hacky_emergency_reset();
 
 /* For cart.c and banksw.h, mostly */
 extern uint8 NTARAM[0x800], *vnapage[4];
@@ -21,6 +22,7 @@ void FCEUPPU_SaveState(void);
 void FCEUPPU_LoadState(int version);
 uint32 FCEUPPU_PeekAddress();
 uint8* FCEUPPU_GetCHR(uint32 vadr, uint32 refreshaddr);
+int FCEUPPU_GetAttr(int ntnum, int xt, int yt);
 void ppu_getScroll(int &xpos, int &ypos);
 
 
@@ -46,3 +48,7 @@ enum PPUPHASE {
 };
 
 extern PPUPHASE ppuphase;
+
+extern unsigned char *cdloggervdata;
+extern unsigned int cdloggerVideoDataSize;
+extern volatile int rendercount, vromreadcount, undefinedvromcount;

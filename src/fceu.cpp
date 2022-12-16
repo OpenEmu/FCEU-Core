@@ -75,7 +75,11 @@ extern void RefreshThrottleFPS();
 #include "drivers/win/memwatch.h"
 #include "drivers/win/tracer.h"
 #else
+#ifdef __QT_DRIVER__
+#include "drivers/Qt/sdl.h"
+#else
 #include "drivers/sdl/sdl.h"
+#endif
 #endif
 
 #include <fstream>
@@ -112,6 +116,7 @@ bool movieSubtitles = true; //Toggle for displaying movie subtitles
 bool DebuggerWasUpdated = false; //To prevent the debugger from updating things without being updated.
 bool AutoResumePlay = false;
 char romNameWhenClosingEmulator[2048] = {0};
+
 
 FCEUGI::FCEUGI()
 	: filename(0),
@@ -188,7 +193,14 @@ static void FCEU_CloseGame(void)
 		}
 
 		if (GameInfo->type != GIT_NSF) {
-			FCEU_FlushGameCheats(0, 0);
+#ifdef WIN32
+			if (disableAutoLSCheats == 2)
+				FCEU_FlushGameCheats(0, 1);
+			else if (disableAutoLSCheats == 1)
+				AskSaveCheat();
+			else if (disableAutoLSCheats == 0)
+#endif
+				FCEU_FlushGameCheats(0, 0);
 		}
 
 		GameInterface(GI_CLOSE);
@@ -360,16 +372,10 @@ uint8 PAL = 0;
 
 static DECLFW(BRAML) {
 	RAM[A] = V;
-	#ifdef _S9XLUA_H
-	CallRegisteredLuaMemHook(A, 1, V, LUAMEMHOOK_WRITE);
-	#endif
 }
 
 static DECLFW(BRAMH) {
 	RAM[A & 0x7FF] = V;
-	#ifdef _S9XLUA_H
-	CallRegisteredLuaMemHook(A & 0x7FF, 1, V, LUAMEMHOOK_WRITE);
-	#endif
 }
 
 static DECLFR(ARAML) {
@@ -395,6 +401,7 @@ void ResetGameLoaded(void) {
 	MapIRQHook = NULL;
 	MMC5Hack = 0;
 	PEC586Hack = 0;
+	QTAIHack = 0;
 	PAL &= 1;
 	default_palette_selection = 0;
 }
@@ -403,8 +410,6 @@ int UNIFLoad(const char *name, FCEUFILE *fp);
 int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
 int FDSLoad(const char *name, FCEUFILE *fp);
 int NSFLoad(const char *name, FCEUFILE *fp);
-
-//char lastLoadedGameName [2048] = {0,}; // hack for movie WRAM clearing on record from poweron
 
 //name should be UTF-8, hopefully, or else there may be trouble
 FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silent)
@@ -417,27 +422,34 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	int lastdendy = dendy;
 
 	const char* romextensions[] = { "nes", "fds", 0 };
-	fp = FCEU_fopen(name, 0, "rb", 0, -1, romextensions);
+
+	// indicator for if the operaton was canceled by user
+	// currently there's only one situation:
+	// the user clicked cancel form the open from archive dialog
+	int userCancel = 0;
+	fp = FCEU_fopen(name, 0, "rb", 0, -1, romextensions, &userCancel);
 
 	if (!fp)
 	{
-		if (!silent)
+		// Although !fp, if the operation was canceled from archive select dialog box, don't show the error message;
+		if (!silent && !userCancel)
 			FCEU_PrintError("Error opening \"%s\"!", name);
+
 		return 0;
-	} else if (fp->archiveFilename != "")
+	}
+	else if (fp->archiveFilename != "")
 	{
 		strcpy(fullname, fp->archiveFilename.c_str());
 		strcat(fullname, "|");
 		strcat(fullname, fp->filename.c_str());
 	} else
-	{
 		strcpy(fullname, name);
-	}
 
+	// reset loaded game BEFORE it's loading.
+	ResetGameLoaded();
 	//file opened ok. start loading.
 	FCEU_printf("Loading %s...\n\n", fullname);
 	GetFileBase(fp->filename.c_str());
-	ResetGameLoaded();
 	//reset parameters so they're cleared just in case a format's loader doesn't know to do the clearing
 	MasterRomInfoParams = TMasterRomInfoParams();
 
@@ -466,98 +478,115 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 
 	//try to load each different format
 	bool FCEUXLoad(const char *name, FCEUFILE * fp);
-	/*if(FCEUXLoad(name,fp))
-	    goto endlseq;*/
-	if (iNESLoad(fullname, fp, OverwriteVidMode))
-		goto endlseq;
-	if (NSFLoad(fullname, fp))
-		goto endlseq;
-	if (UNIFLoad(fullname, fp))
-		goto endlseq;
-	if (FDSLoad(fullname, fp))
-		goto endlseq;
 
-	if (!silent)
-		FCEU_PrintError("An error occurred while loading the file.");
-	FCEU_fclose(fp);
-
-	delete GameInfo;
-	GameInfo = 0;
-
-	return 0;
-
- endlseq:
-
-	FCEU_fclose(fp);
-
-#ifdef WIN32
-// ################################## Start of SP CODE ###########################
-	extern char LoadedRomFName[2048];
-	extern int loadDebugDataFailed;
-
-	if ((loadDebugDataFailed = loadPreferences(mass_replace(LoadedRomFName, "|", ".").c_str())))
-		if (!silent)
-			FCEU_printf("Couldn't load debugging data.\n");
-
-// ################################## End of SP CODE ###########################
-#endif
-
-	FCEU_ResetVidSys();
-
-	if (GameInfo->type != GIT_NSF)
+	int load_result;
+	load_result = iNESLoad(fullname, fp, OverwriteVidMode);
+	if (load_result == LOADER_INVALID_FORMAT)
 	{
-		if (FSettings.GameGenie)
+		load_result = NSFLoad(fullname, fp);
+		if (load_result == LOADER_INVALID_FORMAT)
 		{
-			if (FCEU_OpenGenie())
+			load_result = UNIFLoad(fullname, fp);
+			if (load_result == LOADER_INVALID_FORMAT)
 			{
-				FCEUI_SetGameGenie(false);
-#ifdef WIN32
-				genie = 0;
-#endif
+				load_result = FDSLoad(fullname, fp);
 			}
 		}
-	}
-	PowerNES();
-
-	if (GameInfo->type != GIT_NSF)
-		FCEU_LoadGamePalette();
-
-	FCEU_ResetPalette();
-	FCEU_ResetMessages();   // Save state, status messages, etc.
-
-	if (!lastpal && PAL) {
-		FCEU_DispMessage("PAL mode set", 0);
-		FCEUI_printf("PAL mode set");
-	} else if (!lastdendy && dendy) {
-		// this won't happen, since we don't autodetect dendy, but maybe someday we will?
-		FCEU_DispMessage("Dendy mode set", 0);
-		FCEUI_printf("Dendy mode set");
-	} else if ((lastpal || lastdendy) && !(PAL || dendy)) {
-		FCEU_DispMessage("NTSC mode set", 0);
-		FCEUI_printf("NTSC mode set");
-	}
-
-	if (GameInfo->type != GIT_NSF)
-		FCEU_LoadGameCheats(0);
-
-	if (AutoResumePlay)
+	}	
+	if (load_result == LOADER_OK)
 	{
-		// load "-resume" savestate
-		if (FCEUSS_Load(FCEU_MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
-			FCEU_DispMessage("Old play session resumed.", 0);
-	}
 
-	ResetScreenshotsCounter();
+#ifdef WIN32
+		// ################################## Start of SP CODE ###########################
+		extern char LoadedRomFName[2048];
+		extern int loadDebugDataFailed;
 
-#if defined (WIN32) || defined (WIN64)
-	DoDebuggerDataReload(); // Reloads data without reopening window
-	CDLoggerROMChanged();
-	if (hMemView) UpdateColorTable();
-	if (hCheat) UpdateCheatsAdded();
-	if (FrozenAddressCount)
-		FCEU_DispMessage("%d cheats active", 0, FrozenAddressCount);
+		if ((loadDebugDataFailed = loadPreferences(mass_replace(LoadedRomFName, "|", ".").c_str())))
+			if (!silent)
+				FCEU_printf("Couldn't load debugging data.\n");
+
+		// ################################## End of SP CODE ###########################
 #endif
 
+		if (OverwriteVidMode)
+			FCEU_ResetVidSys();
+
+		if (GameInfo->type != GIT_NSF && 
+			FSettings.GameGenie && 
+			FCEU_OpenGenie())
+		{
+			FCEUI_SetGameGenie(false);
+#ifdef WIN32
+			genie = 0;
+#endif
+		}
+
+		PowerNES();
+
+		if (GameInfo->type != GIT_NSF)
+			FCEU_LoadGamePalette();
+
+		FCEU_ResetPalette();
+		FCEU_ResetMessages();   // Save state, status messages, etc.
+
+		if (!lastpal && PAL) {
+			FCEU_DispMessage("PAL mode set", 0);
+			FCEUI_printf("PAL mode set");
+		}
+		else if (!lastdendy && dendy) {
+			// this won't happen, since we don't autodetect dendy, but maybe someday we will?
+			FCEU_DispMessage("Dendy mode set", 0);
+			FCEUI_printf("Dendy mode set");
+		}
+		else if ((lastpal || lastdendy) && !(PAL || dendy)) {
+			FCEU_DispMessage("NTSC mode set", 0);
+			FCEUI_printf("NTSC mode set");
+		}
+
+		if (GameInfo->type != GIT_NSF && !disableAutoLSCheats)
+			FCEU_LoadGameCheats(0);
+
+		if (AutoResumePlay)
+		{
+			// load "-resume" savestate
+			if (FCEUSS_Load(FCEU_MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str(), false))
+				FCEU_DispMessage("Old play session resumed.", 0);
+		}
+
+		ResetScreenshotsCounter();
+
+#if defined (WIN32) || defined (WIN64)
+		DoDebuggerDataReload(); // Reloads data without reopening window
+		CDLoggerROMChanged();
+		if (hMemView) UpdateColorTable();
+		if (hCheat)
+		{
+			UpdateCheatsAdded();
+			UpdateCheatRelatedWindow();
+		}
+		if (FrozenAddressCount)
+			FCEU_DispMessage("%d cheats active", 0, FrozenAddressCount);
+#endif
+	}
+	else {
+		if (!silent)
+		{
+			switch (load_result)
+			{
+			case LOADER_UNHANDLED_ERROR:
+				FCEU_PrintError("An error occurred while loading the file.");
+				break;
+			case LOADER_INVALID_FORMAT:
+				FCEU_PrintError("Unknown ROM file format.");
+				break;
+			}
+		}
+
+		delete GameInfo;
+		GameInfo = 0;
+	}
+
+	FCEU_fclose(fp);
 	return GameInfo;
 }
 
@@ -727,9 +756,14 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
 #endif
 
+	FCEU_PutImage();
+
 #ifdef WIN32
 	//These Windows only dialogs need to be updated only once per frame so they are included here
-	UpdateCheatList(); // CaH4e3: can't see why, this is only cause problems with selection - adelikat: selection is only a problem when not paused, it shoudl be paused to select, we want to see the values update
+	// CaH4e3: can't see why, this is only cause problems with selection
+	// adelikat: selection is only a problem when not paused, it should be paused to select, we want to see the values update
+	// owomomo: use an OWNERDATA CListCtrl to partially solve the problem
+	UpdateCheatList();
 	UpdateTextHooker();
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 	RamChange();
@@ -738,6 +772,10 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	extern int KillFCEUXonFrame;
 	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
 		DoFCEUExit();
+#else
+		extern int KillFCEUXonFrame;
+	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
+		exit(0);
 #endif
 
 	timestampbase += timestamp;
@@ -796,17 +834,79 @@ void ResetNES(void) {
 	FCEU_DispMessage("Reset", 0);
 }
 
-void FCEU_MemoryRand(uint8 *ptr, uint32 size) {
+
+int RAMInitSeed = 0;
+int RAMInitOption = 0;
+
+u64 splitmix64(u32 input) {
+	u64 z = (input + 0x9e3779b97f4a7c15);
+	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+	z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+	return z ^ (z >> 31);
+}
+
+static inline u64 xoroshiro128plus_rotl(const u64 x, int k) {
+	return (x << k) | (x >> (64 - k));
+}
+
+u64 xoroshiro128plus_s[2];
+void xoroshiro128plus_seed(u32 input)
+{
+//http://xoroshiro.di.unimi.it/splitmix64.c
+	u64 x = input;
+
+	u64 z = (x += 0x9e3779b97f4a7c15);
+	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+	z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+	xoroshiro128plus_s[0] = z ^ (z >> 31);
+	
+	z = (x += 0x9e3779b97f4a7c15);
+	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+	z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+	xoroshiro128plus_s[1] = z ^ (z >> 31);
+}
+
+//http://vigna.di.unimi.it/xorshift/xoroshiro128plus.c
+u64 xoroshiro128plus_next() {
+	const u64 s0 = xoroshiro128plus_s[0];
+	u64 s1 = xoroshiro128plus_s[1];
+	const u64 result = s0 + s1;
+
+	s1 ^= s0;
+	xoroshiro128plus_s[0] = xoroshiro128plus_rotl(s0, 55) ^ s1 ^ (s1 << 14); // a, b
+	xoroshiro128plus_s[1] = xoroshiro128plus_rotl(s1, 36); // c
+
+	return result;
+}
+
+void FCEU_MemoryRand(uint8 *ptr, uint32 size, bool default_zero) {
 	int x = 0;
+
 	while (size) {
-		*ptr = (x & 4) ? 0xFF : 0x00;	// Huang Di DEBUG MODE enabled by default
-										// Cybernoid NO MUSIC by default
-//		*ptr = (x & 4) ? 0x7F : 0x00;	// Huang Di DEBUG MODE enabled by default
-										// Minna no Taabou no Nakayoshi Daisakusen DOESN'T BOOT
-										// Cybernoid NO MUSIC by default
-//		*ptr = (x & 1) ? 0x55 : 0xAA;	// F-15 Sity War HISCORE is screwed...
-										// 1942 SCORE/HISCORE is screwed...
-//		*ptr = 0xFF;					// Work for all cases
+		uint8 v = 0;
+		switch (RAMInitOption)
+		{
+			default:
+			case 0:
+				if (!default_zero) v = (x & 4) ? 0xFF : 0x00;
+				else               v = 0x00;
+				break;
+			case 1: v = 0xFF; break;
+			case 2: v = 0x00; break;
+			case 3: v = (u8)(xoroshiro128plus_next()); break;
+
+			// the default is this 8 byte pattern: 00 00 00 00 FF FF FF FF
+			// it has been used in FCEUX since time immemorial
+
+			// Some games to examine uninitialied RAM problems with:
+			// * Cybernoid - music option starts turned off with default pattern
+			// * Huang Di - debug mode is enabled with default pattern
+			// * Minna no Taabou no Nakayoshi Daisakusen - fails to boot with some patterns
+			// * F-15 City War - high score table
+			// * 1942 - high score table
+			// * Cheetahmen II - may start in different levels with different RAM startup
+		}
+		*ptr = v;
 		x++;
 		size--;
 		ptr++;
@@ -820,18 +920,21 @@ void PowerNES(void) {
 	FCEUMOV_AddCommand(FCEUNPCMD_POWER);
 	if (!GameInfo) return;
 
+	//reseed random, unless we're in a movie
+	extern int disableBatteryLoading;
+	if(FCEUMOV_Mode(MOVIEMODE_INACTIVE) && !disableBatteryLoading)
+	{
+		RAMInitSeed = rand() ^ (u32)xoroshiro128plus_next();
+	}
+
+	//always reseed the PRNG with the current seed, for deterministic results (for that seed)
+	xoroshiro128plus_seed(RAMInitSeed);
+
 	FCEU_CheatResetRAM();
 	FCEU_CheatAddRAM(2, 0, RAM);
 
 	FCEU_GeniePower();
 
-	//dont do this, it breaks some games: Cybernoid; Minna no Taabou no Nakayoshi Daisakusen; and maybe mechanized attack
-	//memset(RAM,0xFF,0x800);
-	//this fixes the above, but breaks Huang Di, which expects $100 to be non-zero or else it believes it has debug cheats enabled, giving you moon jump and other great but likely unwanted things
-	//FCEU_MemoryRand(RAM,0x800);
-	//this should work better, based on observational evidence. fixes all of the above:
-	//for(int i=0;i<0x800;i++) if(i&1) RAM[i] = 0xAA; else RAM[i] = 0x55;
-	//but we're leaving this for now until we collect some more data
 	FCEU_MemoryRand(RAM, 0x800);
 
 	SetReadHandler(0x0000, 0xFFFF, ANull);
@@ -902,7 +1005,8 @@ void FCEU_ResetVidSys(void) {
 
 FCEUS FSettings;
 
-void FCEU_printf(char *format, ...) {
+void FCEU_printf(const char *format, ...) 
+{
 	char temp[2048];
 
 	va_list ap;
@@ -921,7 +1025,8 @@ void FCEU_printf(char *format, ...) {
 	va_end(ap);
 }
 
-void FCEU_PrintError(char *format, ...) {
+void FCEU_PrintError(const char *format, ...) 
+{
 	char temp[2048];
 
 	va_list ap;
@@ -964,35 +1069,40 @@ int FCEUI_GetCurrentVidSystem(int *slstart, int *slend) {
 	return(PAL);
 }
 
-void FCEUI_SetRegion(int region) {
+void FCEUI_SetRegion(int region, int notify) {
 	switch (region) {
 		case 0: // NTSC
 			normalscanlines = 240;
 			pal_emulation = 0;
 			dendy = 0;
-// until it's fixed on sdl. see issue #740
-#ifdef WIN32
-			FCEU_DispMessage("NTSC mode set", 0);
-			FCEUI_printf("NTSC mode set");
-#endif
+
+			if (notify)
+			{
+				FCEU_DispMessage("NTSC mode set", 0);
+				FCEUI_printf("NTSC mode set");
+			}
 			break;
 		case 1: // PAL
 			normalscanlines = 240;
 			pal_emulation = 1;
 			dendy = 0;
-#ifdef WIN32
-			FCEU_DispMessage("PAL mode set", 0);
-			FCEUI_printf("PAL mode set");
-#endif
+
+			if (notify)
+			{
+				FCEU_DispMessage("PAL mode set", 0);
+				FCEUI_printf("PAL mode set");
+			}
 			break;
 		case 2: // Dendy
 			normalscanlines = 290;
 			pal_emulation = 0;
 			dendy = 1;
-#ifdef WIN32
-			FCEU_DispMessage("Dendy mode set", 0);
-			FCEUI_printf("Dendy mode set");
-#endif
+
+			if (notify)
+			{
+				FCEU_DispMessage("Dendy mode set", 0);
+				FCEUI_printf("Dendy mode set");
+			}
 			break;
 	}
 	normalscanlines += newppu;
@@ -1112,6 +1222,7 @@ bool FCEU_IsValidUI(EFCEUI ui) {
 	case FCEUI_CLOSEGAME:
 		if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
+
 	case FCEUI_RECORDMOVIE:
 	case FCEUI_PLAYMOVIE:
 	case FCEUI_QUICKSAVE:
@@ -1126,10 +1237,14 @@ bool FCEU_IsValidUI(EFCEUI ui) {
 		break;
 
 	case FCEUI_STOPMOVIE:
-		return(FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_FINISHED));
+	case FCEUI_TOGGLERECORDINGMOVIE:
+		return FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_FINISHED);
 
 	case FCEUI_PLAYFROMBEGINNING:
-		return(FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_TASEDITOR | MOVIEMODE_FINISHED));
+		return FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD | MOVIEMODE_TASEDITOR | MOVIEMODE_FINISHED);
+
+	case FCEUI_TRUNCATEMOVIE:
+		return FCEUMOV_Mode(MOVIEMODE_PLAY | MOVIEMODE_RECORD);
 
 	case FCEUI_STOPAVI:
 		return FCEUI_AviIsRecording();
@@ -1150,7 +1265,12 @@ bool FCEU_IsValidUI(EFCEUI ui) {
 #endif
 		if (!FCEUMOV_Mode(MOVIEMODE_INACTIVE)) return false;
 		break;
+
+	case FCEUI_INPUT_BARCODE:
+		if (!GameInfo) return false;
+		if (!FCEUMOV_Mode(MOVIEMODE_INACTIVE)) return false;
 	}
+
 	return true;
 }
 
@@ -1282,12 +1402,12 @@ uint8 FCEU_ReadRomByte(uint32 i) {
 void FCEU_WriteRomByte(uint32 i, uint8 value) {
 	if (i < 16)
 #ifdef WIN32
-		MessageBox(hMemView,"Sorry", "You can't edit the ROM header.", MB_OK);
+		MessageBox(hMemView, "Sorry", "You can't edit the ROM header.", MB_OK | MB_ICONERROR);
 #else
 		printf("Sorry, you can't edit the ROM header.\n");
 #endif
 	if (i < 16 + PRGsize[0])
 		PRGptr[0][i - 16] = value;
-	if (i < 16 + PRGsize[0] + CHRsize[0])
+	else if (i < 16 + PRGsize[0] + CHRsize[0])
 		CHRptr[0][i - 16 - PRGsize[0]] = value;
 }

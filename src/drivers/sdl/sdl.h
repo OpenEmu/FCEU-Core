@@ -1,15 +1,15 @@
 #ifndef __FCEU_SDL_H
 #define __FCEU_SDL_H
 
-#if _SDL2
-#include <SDL2/SDL.h>
-#else
+//#if _SDL2
+//#include <SDL2/SDL.h>
+//#else
 //#include <SDL.h>
-#endif
+//#endif
 
 #include "main.h"
-#include "dface.h"
-#include "input.h"
+//#include "dface.h"
+//#include "input.h"
 
 // I'm using this as a #define so the compiler can optimize the
 // modulo operation
@@ -24,7 +24,7 @@ extern int dendy;
 extern int pal_emulation;
 extern bool swapDuty;
 
-int LoadGame(const char *path);
+int LoadGame(const char *path, bool silent = false);
 int CloseGame(void);
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 uint64 FCEUD_GetTime();

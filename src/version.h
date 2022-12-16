@@ -26,12 +26,12 @@
 
 //todo - everyone will want to support this eventually, i suppose
 #ifdef _MSC_VER
-#include "svnrev.h"
+#include "scmrev.h"
 #else
 #ifdef SVN_REV
-#define SVN_REV_STR SVN_REV
+#define SCM_REV_STR SCM_REV
 #else
-#define SVN_REV_STR ""
+#define SCM_REV_STR ""
 #endif
 #endif
 
@@ -44,7 +44,7 @@
 #elif defined(PUBLIC_RELEASE)
 #define FCEU_SUBVERSION_STRING ""
 #else
-#define FCEU_SUBVERSION_STRING "-interim svn" SVN_REV_STR
+#define FCEU_SUBVERSION_STRING "-interim git" SCM_REV_STR
 #endif
 
 #if defined(_MSC_VER)
@@ -60,8 +60,16 @@
 #define FCEU_COMPILER_DETAIL ""
 #endif
 
-#define FCEU_VERSION_NUMERIC 22020
-#define FCEU_VERSION_STRING "2.2.3" FCEU_SUBVERSION_STRING FCEU_FEATURE_STRING FCEU_COMPILER
+#define FCEU_VERSION_MAJOR  2
+#define FCEU_VERSION_MINOR  3
+#define FCEU_VERSION_PATCH  0
+
+#define FCEU_VERSION_NUMERIC  ( (FCEU_VERSION_MAJOR*10000) + (FCEU_VERSION_MINOR*100) + (FCEU_VERSION_PATCH) )
+#define FCEU_VERSION_MAJOR_DECODE(x)  ( (x / 10000) )
+#define FCEU_VERSION_MINOR_DECODE(x)  ( (x / 100) % 100 )
+#define FCEU_VERSION_PATCH_DECODE(x)    (x % 100)
+
+#define FCEU_VERSION_STRING "2.3.0"  FCEU_SUBVERSION_STRING FCEU_FEATURE_STRING FCEU_COMPILER
 #define FCEU_NAME_AND_VERSION FCEU_NAME " " FCEU_VERSION_STRING
 
 #endif

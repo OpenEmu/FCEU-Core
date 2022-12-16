@@ -76,6 +76,8 @@ uint8 geniech[3];
 
 uint32 genieaddr[3];
 
+CartInfo *currCartInfo;
+
 static INLINE void setpageptr(int s, uint32 A, uint8 *p, int ram) {
 	uint32 AB = A >> 11;
 	int x;
@@ -129,6 +131,11 @@ void SetupCartCHRMapping(int chip, uint8 *p, uint32 size, int ram) {
 	CHRmask2[chip] = (size >> 11) - 1;
 	CHRmask4[chip] = (size >> 12) - 1;
 	CHRmask8[chip] = (size >> 13) - 1;
+
+	if (CHRmask1[chip] >= (unsigned int)(-1)) CHRmask1[chip] = 0;
+	if (CHRmask2[chip] >= (unsigned int)(-1)) CHRmask2[chip] = 0;
+	if (CHRmask4[chip] >= (unsigned int)(-1)) CHRmask4[chip] = 0;
+	if (CHRmask8[chip] >= (unsigned int)(-1)) CHRmask8[chip] = 0;
 
 	CHRram[chip] = ram;
 }

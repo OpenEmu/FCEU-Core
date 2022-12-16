@@ -1,3 +1,6 @@
+#ifndef CART_H
+#define CART_H
+
 typedef struct {
 	// Set by mapper/board code:
 	void (*Power)(void);
@@ -24,6 +27,8 @@ typedef struct {
 					// code, used by mapper/board code, maybe
 					// other code in the future.
 } CartInfo;
+
+extern CartInfo *currCartInfo;
 
 void FCEU_SaveGameSave(CartInfo *LocalHWInfo);
 void FCEU_LoadGameSave(CartInfo *LocalHWInfo);
@@ -98,3 +103,5 @@ void FCEU_GeniePower(void);
 bool FCEU_OpenGenie(void);
 void FCEU_CloseGenie(void);
 void FCEU_KillGenie(void);
+
+#endif
