@@ -12,14 +12,19 @@ else()
 	set( Qt Qt5 )
 endif()
 
+if ( ${QHELP} )
+	set(QtHelpModule Help)
+	add_definitions( -D_USE_QHELP )
+endif()
+
 if ( ${QT6} )
-  	find_package( Qt6 COMPONENTS Widgets OpenGL OpenGLWidgets REQUIRED)
-  	add_definitions( ${Qt6Widgets_DEFINITIONS} ${Qt6OpenGLWidgets_DEFINITIONS} )
-  	include_directories( ${Qt6Widgets_INCLUDE_DIRS} ${Qt6OpenGLWidgets_INCLUDE_DIRS} )
+	find_package( Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets ${QtHelpModule})
+  	add_definitions( ${Qt6Widgets_DEFINITIONS} ${Qt6Help_DEFINITIONS} ${Qt6OpenGLWidgets_DEFINITIONS} )
+  	include_directories( ${Qt6Widgets_INCLUDE_DIRS} ${Qt6Help_INCLUDE_DIRS} ${Qt6OpenGLWidgets_INCLUDE_DIRS} )
 else()
-  	find_package( Qt5 COMPONENTS Widgets OpenGL REQUIRED)
-  	add_definitions( ${Qt5Widgets_DEFINITIONS}  )
-  	include_directories( ${Qt5Widgets_INCLUDE_DIRS} )
+	find_package( Qt5 REQUIRED COMPONENTS Widgets OpenGL ${QtHelpModule})
+	add_definitions( ${Qt5Widgets_DEFINITIONS} ${Qt5Help_DEFINITIONS} )
+	include_directories( ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Help_INCLUDE_DIRS} )
 endif()
 
 if(WIN32)
@@ -34,8 +39,19 @@ if(WIN32)
      include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/drivers/win/zlib )
      set( OPENGL_LDFLAGS  OpenGL::GL )
      set( SDL2_LDFLAGS  ${SDL_INSTALL_PREFIX}/SDL2/lib/x64/SDL2.lib )
-     set( SYS_LIBS  wsock32 ws2_32 vfw32 )
+     set( SYS_LIBS  wsock32 ws2_32 vfw32 Htmlhelp )
      set(APP_ICON_RESOURCES_WINDOWS  ${CMAKE_SOURCE_DIR}/icons/fceux.rc )
+
+     if ( ${USE_LIBAV} )
+        add_definitions( -D_USE_LIBAV ${LIBAV_CFLAGS} )
+        include_directories( ${FFMPEG_INSTALL_PREFIX}/ffmpeg/include )
+        set( LIBAV_LDFLAGS  ${FFMPEG_INSTALL_PREFIX}/ffmpeg/lib/avcodec.lib
+        	                 ${FFMPEG_INSTALL_PREFIX}/ffmpeg/lib/avformat.lib
+                	         ${FFMPEG_INSTALL_PREFIX}/ffmpeg/lib/avutil.lib
+                        	 ${FFMPEG_INSTALL_PREFIX}/ffmpeg/lib/swscale.lib
+                        	 ${FFMPEG_INSTALL_PREFIX}/ffmpeg/lib/swresample.lib )
+     endif()
+
 else(WIN32)
   # Non Windows System
   # UNIX (Linux or Mac OSX)
@@ -83,6 +99,20 @@ else(WIN32)
 	  add_definitions( -D_USE_X264 ${X264_CFLAGS} )
   endif()
 
+  pkg_check_modules( X265 x265)
+
+  if ( ${X265_FOUND} )
+	  message( STATUS "Using System X265 Encoder Library ${X265_VERSION}" )
+	  add_definitions( -D_USE_X265 ${X265_CFLAGS} )
+  endif()
+
+  pkg_check_modules( LIBAV  libavcodec  libavformat  libavutil  libswresample  libswscale)
+
+  if ( ${LIBAV_FOUND} )
+	  message( STATUS "Using System Libav Library ${LIBAV_VERSION}" )
+	  add_definitions( -D_USE_LIBAV ${LIBAV_CFLAGS} )
+  endif()
+
   #pkg_check_modules( GL gl) # Use built in find package instead for OpenGL
 
   # Check for OpenGL
@@ -101,12 +131,19 @@ else(WIN32)
   pkg_search_module( LUA lua5.1 lua-5.1 )
 
   add_definitions( -DHAVE_ASPRINTF ) # What system wouldn't have this?
+  add_definitions( -DLUA_USE_LINUX ) # This needs to be set when link LUA internally for linux and macosx
 
   if(APPLE)
 	set( OPENGL_LDFLAGS  "-framework OpenGL" )
   else()
 	set( OPENGL_LDFLAGS  ${OPENGL_LIBRARIES} )
-  	set( SYS_LIBS  -lrt  -lpthread )
+	# OpenBSD  refuses  to  implement  the POSIX  realtime  interface  and
+	# refuses to provide a stub library for -ldl
+	if(${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
+	  	set( SYS_LIBS  -lpthread)
+        else()
+          	set( SYS_LIBS  -lrt  -lpthread  -ldl)
+        endif()
   endif()
 
 endif(WIN32)
@@ -457,8 +494,11 @@ set(SRC_DRIVERS_SDL
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/FrameTimingStats.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/PaletteConf.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/PaletteEditor.cpp  
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/ColorMenu.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/GuiConf.cpp  
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/HelpPages.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/MoviePlay.cpp  
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/MovieRecord.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/MovieOptions.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/LuaControl.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/CheatsConf.cpp  
@@ -489,6 +529,7 @@ set(SRC_DRIVERS_SDL
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/sdl-throttle.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/unix-netplay.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/AviRecord.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/AviRiffViewer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/avi-utils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/fileio.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/gwavi.cpp
@@ -530,12 +571,13 @@ endif()
 
 target_link_libraries( ${APP_NAME}  
    ${${Qt}Widgets_LIBRARIES}
+   ${${Qt}Help_LIBRARIES}
    ${${Qt}OpenGL_LIBRARIES}
    ${${Qt}OpenGLWidgets_LIBRARIES}
    ${OPENGL_LDFLAGS}  
  	${SDL2_LDFLAGS}
 	${MINIZIP_LDFLAGS} ${ZLIB_LIBRARIES}
-	${LUA_LDFLAGS} ${X264_LDFLAGS}
+	${LUA_LDFLAGS} ${X264_LDFLAGS} ${X265_LDFLAGS} ${LIBAV_LDFLAGS}
  	${SYS_LIBS}
 )
 
@@ -554,8 +596,11 @@ install( TARGETS  ${APP_NAME}
 # Use \$ to defer expansion until install script is called; CPack will call it with its own CMAKE_INSTALL_PREFIX
 set(APP \${CMAKE_INSTALL_PREFIX}/${APP_NAME}.app)
 
+install( DIRECTORY ${CMAKE_SOURCE_DIR}/output/.
+	DESTINATION ${APP_NAME}.app/Contents/Resources COMPONENT Extra )
+
 set(CPACK_PACKAGE_ICON ${CMAKE_SOURCE_DIR}/fceux.icns )
-set(CPACK_GENERATOR "DRAGNDROP")
+set(CPACK_GENERATOR "DragNDrop")
 include(CPACK)
 
 # macdeployqt tool that comes with Qt: https://doc.qt.io/qt-5/macos-deployment.html#macdeploy
@@ -565,9 +610,14 @@ if(NOT MACDEPLOYQT)
 	message(FATAL_ERROR "Could not find macdeployqt executable")
 endif()
 
+find_package(Perl REQUIRED)
+
 install( CODE "
 	message(STATUS \"Deploying and fixing up dependencies in app: ${APP}\")
 	execute_process(COMMAND \"${MACDEPLOYQT}\" \"${APP}\" -verbose=1)
+	execute_process(COMMAND \"${PERL_EXECUTABLE}\"
+	                        \"${CMAKE_SOURCE_DIR}/scripts/macOSX_BundleFix.pl\"
+	                        \"${CMAKE_BINARY_DIR}/_CPack_Packages\")
 		"
 	COMPONENT Runtime
 	)
