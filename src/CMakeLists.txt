@@ -1,3 +1,4 @@
+include(GNUInstallDirs)
 
 set( APP_NAME fceux)
 set(CMAKE_AUTOMOC ON)
@@ -533,6 +534,24 @@ set(SRC_DRIVERS_SDL
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/avi-utils.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/fileio.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/avi/gwavi.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/TasEditorWindow.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/taseditor_project.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/taseditor_config.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/taseditor_lua.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/markers_manager.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/greenzone.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/selection.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/playback.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/recorder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/history.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/splicer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/inputlog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/laglog.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/branches.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/bookmarks.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/bookmark.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/snapshot.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TasEditor/markers.cpp
 )
 
 set(SOURCES ${SRC_CORE} ${SRC_DRIVERS_COMMON} ${SRC_DRIVERS_SDL})
@@ -631,7 +650,7 @@ install( FILES     ${CMAKE_CURRENT_SOURCE_DIR}/auxlib.lua                DESTINA
 install( DIRECTORY ${CMAKE_SOURCE_DIR}/output/.                          DESTINATION share/fceux  )
 install( FILES     ${CMAKE_SOURCE_DIR}/fceux1.png                        DESTINATION share/pixmaps  )
 install( FILES     ${CMAKE_SOURCE_DIR}/fceux.desktop                     DESTINATION share/applications  )
-install( FILES     ${CMAKE_SOURCE_DIR}/documentation/fceux.6             DESTINATION share/man/man6  )
-install( FILES     ${CMAKE_SOURCE_DIR}/documentation/fceux-net-server.6  DESTINATION share/man/man6  )
+install( FILES     ${CMAKE_SOURCE_DIR}/documentation/fceux.6             DESTINATION ${CMAKE_INSTALL_MANDIR}/man6  )
+install( FILES     ${CMAKE_SOURCE_DIR}/documentation/fceux-net-server.6  DESTINATION ${CMAKE_INSTALL_MANDIR}/man6  )
 
 endif(APPLE)
