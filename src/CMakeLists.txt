@@ -513,6 +513,7 @@ set(SRC_DRIVERS_SDL
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/ConsoleVideoConf.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/ConsoleSoundConf.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/iNesHeaderEditor.cpp  
+  ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/SplashScreen.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/TraceLogger.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/AboutWindow.cpp  
   ${CMAKE_CURRENT_SOURCE_DIR}/drivers/Qt/fceuWrapper.cpp  
@@ -555,6 +556,13 @@ set(SRC_DRIVERS_SDL
 )
 
 set(SOURCES ${SRC_CORE} ${SRC_DRIVERS_COMMON} ${SRC_DRIVERS_SDL})
+
+# Put build timestamp into BUILD_TS environment variable and from there into
+# the FCEUX_BUILD_TIMESTAMP preprocessor definition.
+# Note: with CMake >= 3.8.0, this will respect SOURCE_DATE_EPOCH. For more info,
+#       see <https://reproducible-builds.org/docs/source-date-epoch/>.
+string(TIMESTAMP BUILD_TS "%H:%M:%S  %b %d %Y")
+add_definitions( -DFCEUX_BUILD_TIMESTAMP=\"${BUILD_TS}\" )
 
 if (WIN32)
 add_custom_command( 
