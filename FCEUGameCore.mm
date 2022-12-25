@@ -233,7 +233,7 @@ static __weak FCEUGameCore *_current;
     for (int i = 0; i < _soundSize; i++)
         _soundBuffer[i] = (_soundBuffer[i] << 16) | (_soundBuffer[i] & 0xffff);
 
-    [[self ringBufferAtIndex:0] write:_soundBuffer maxLength:_soundSize << 2];
+    [[self audioBufferAtIndex:0] write:_soundBuffer maxLength:_soundSize << 2];
 }
 
 - (void)resetEmulation
