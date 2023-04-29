@@ -23,7 +23,7 @@ ArchiveScanRecord FCEUD_ScanArchive(std::string fname);
 const char *FCEUD_GetCompilerString();
 
 //This makes me feel dirty for some reason.
-void FCEU_printf(const char *format, ...);
+void FCEU_printf( __FCEU_PRINTF_FORMAT const char *format, ...)  __FCEU_PRINTF_ATTRIBUTE( 1, 2 );
 #define FCEUI_printf FCEU_printf
 
 //Video interface
@@ -192,7 +192,7 @@ void TaseditorManualFunction(void);
 int32 FCEUI_GetDesiredFPS(void);
 void FCEUI_SaveSnapshot(void);
 void FCEUI_SaveSnapshotAs(void);
-void FCEU_DispMessage(const char *format, int disppos, ...);
+void FCEU_DispMessage( __FCEU_PRINTF_FORMAT const char *format, int disppos, ...) __FCEU_PRINTF_ATTRIBUTE( 1, 3 );
 #define FCEUI_DispMessage FCEU_DispMessage
 
 int FCEUI_DecodePAR(const char *code, int *a, int *v, int *c, int *type);
@@ -207,10 +207,10 @@ void FCEUI_CheatSearchGetRange(uint32 first, uint32 last, int (*callb)(uint32 a,
 void FCEUI_CheatSearchGet(int (*callb)(uint32 a, uint8 last, uint8 current, void *data), void *data);
 void FCEUI_CheatSearchBegin(void);
 void FCEUI_CheatSearchEnd(int type, uint8 v1, uint8 v2);
-void FCEUI_ListCheats(int (*callb)(char *name, uint32 a, uint8 v, int compare, int s, int type, void *data), void *data);
+void FCEUI_ListCheats(int (*callb)(const char *name, uint32 a, uint8 v, int compare, int s, int type, void *data), void *data);
 
-int FCEUI_GetCheat(uint32 which, char **name, uint32 *a, uint8 *v, int *compare, int *s, int *type);
-int FCEUI_SetCheat(uint32 which, const char *name, int32 a, int32 v, int compare,int s, int type);
+int FCEUI_GetCheat(uint32 which, std::string *name, uint32 *a, uint8 *v, int *compare, int *s, int *type);
+int FCEUI_SetCheat(uint32 which, const std::string *name, int32 a, int32 v, int compare,int s, int type);
 
 void FCEUI_CheatSearchShowExcluded(void);
 void FCEUI_CheatSearchSetCurrentAsOriginal(void);
@@ -254,6 +254,8 @@ void FCEUI_VSUniToggleDIP(int w);
 uint8 FCEUI_VSUniGetDIPs(void);
 void FCEUI_VSUniSetDIP(int w, int state);
 void FCEUI_VSUniCoin(void);
+void FCEUI_VSUniCoin2(void);
+void FCEUI_VSUniService(void);
 
 void FCEUI_FDSInsert(void); //mbg merge 7/17/06 changed to void fn(void) to make it an EMUCMDFN
 //int FCEUI_FDSEject(void);
@@ -329,6 +331,9 @@ void FCEUD_DebugBreakpoint(int bp_num);
 
 ///the driver should log the current instruction, if it wants (we should move the code in the win driver that does this to the shared area)
 void FCEUD_TraceInstruction(uint8 *opcode, int size);
+
+///the driver should flush its trace log
+void FCEUD_FlushTrace();
 
 ///the driver might should update its NTView (only used if debugging support is compiled in)
 void FCEUD_UpdateNTView(int scanline, bool drawall);

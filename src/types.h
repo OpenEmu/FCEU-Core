@@ -62,6 +62,8 @@ typedef signed int int32;
 #define alloca __builtin_alloca
 #endif
 
+//#include <typeinfo>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -131,7 +133,7 @@ typedef uint32_t uint32;
 
 #endif
 
-#if defined(WIN32) && !defined(__QT_DRIVER__)
+#if defined(WIN32) && !defined(__QT_DRIVER__) && !defined(__WIN_DRIVER__)
 #define  __WIN_DRIVER__
 #endif
 
@@ -142,6 +144,88 @@ typedef uint8 (*readfunc)(uint32 A);
 #ifndef CTASSERT
 #define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];
 #endif
+
+#define __FCEU_STRINGIZE2(x) #x
+#define __FCEU_STRINGIZE(x) __FCEU_STRINGIZE2(x)
+
+#define  FCEU_CPP_HAS_STD(x)  ( defined(__cplusplus) && (__cplusplus >= x) )
+
+#ifdef   __has_cpp_attribute
+#define  FCEU_HAS_CPP_ATTRIBUTE(x)  __has_cpp_attribute(x)
+#else
+#define  FCEU_HAS_CPP_ATTRIBUTE(x)  0
+#endif
+
+#define  FCEU_UNUSED(x)   (void)(x)
+
+#if FCEU_CPP_HAS_STD(201603L) || FCEU_HAS_CPP_ATTRIBUTE(maybe_unused)
+#define  FCEU_MAYBE_UNUSED  [[maybe_unused]]
+#else
+#define  FCEU_MAYBE_UNUSED
+#endif
+
+#if defined(_MSC_VER)
+	// Microsoft compiler won't catch format issues, but VS IDE can catch on analysis mode
+	#define  __FCEU_PRINTF_FORMAT  _In_z_ _Printf_format_string_
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )
+
+#elif defined(__GNUC__) || defined(__clang__) || FCEU_HAS_CPP_ATTRIBUTE(format)
+	// GCC and Clang compilers will perform printf format type checks, useful for catching format errors.
+	#define  __FCEU_PRINTF_FORMAT
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )  __attribute__((__format__(__printf__, fmt, va)))
+
+#else
+	#define  __FCEU_PRINTF_FORMAT
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )
+#endif
+
+// Scoped pointer ensures that memory pointed to by this object gets cleaned up
+// and deallocated when this object goes out of scope. Helps prevent memory leaks
+// on temporary memory allocations in functions with early outs.
+template <typename T> 
+class fceuScopedPtr
+{
+	public:
+		fceuScopedPtr( T *ptrIn = nullptr )
+		{
+			//printf("Scoped Pointer Constructor <%s>: %p\n", typeid(T).name(), ptrIn );
+			ptr = ptrIn;
+		}
+
+		~fceuScopedPtr(void)
+		{
+			//printf("Scoped Pointer Destructor <%s>: %p\n", typeid(T).name(), ptr );
+			if (ptr)
+			{
+				delete ptr;
+				ptr = nullptr;
+			}
+		}
+
+		T* operator= (T *ptrIn)
+		{
+			ptr = ptrIn;
+			return ptr;
+		}
+
+		T* get(void)
+		{
+			return ptr;
+		}
+
+		void Delete(void)
+		{
+			if (ptr)
+			{
+				delete ptr;
+				ptr = nullptr;
+			}
+		}
+
+	private:
+		T *ptr;
+
+};
 
 #include "utils/endian.h"
 
