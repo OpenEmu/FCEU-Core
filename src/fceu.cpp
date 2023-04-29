@@ -887,7 +887,8 @@ void ResetNES(void) {
 	extern uint8 *XBackBuf;
 	memset(XBackBuf, 0, 256 * 256);
 
-	FCEU_DispMessage("Reset", 0);
+    // OpenEmu
+	//FCEU_DispMessage("Reset", 0);
 }
 
 
