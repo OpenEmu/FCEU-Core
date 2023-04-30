@@ -6,6 +6,7 @@
 #include "cart.h"
 #include "ines.h"
 #include "debug.h"
+#include "debugsymboltable.h"
 #include "driver.h"
 #include "ppu.h"
 
@@ -41,6 +42,13 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 	}
 	else // BT_C
 	{
+		auto sym = debugSymbolTable.getSymbolAtAnyBank(offsetBuffer);
+
+		if (sym)
+		{
+			return sym->offset() & 0xFFFF;
+		}
+
 		int type = GIT_CART;
 
 		if (GameInfo)
@@ -642,7 +650,8 @@ uint16 StackNextIgnorePC = 0xFFFF;
 
 ///fires a breakpoint
 static void breakpoint(uint8 *opcode, uint16 A, int size) {
-	int i, j, romAddrPC;
+	int i, romAddrPC;
+	unsigned int j;
 	uint8 brk_type;
 	uint8 stackop=0;
 	uint8 stackopstartaddr=0,stackopendaddr=0;
@@ -783,7 +792,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 					{
 						if (watchpoint[i].flags & BT_R)
 						{
-							if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == romAddrPC) )
+							if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == static_cast<unsigned int>(romAddrPC)) )
 							{
 								BREAKHIT(i);
 							}
@@ -814,7 +823,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 						// TXS and TSX only deal with the pointer.
 						if (watchpoint[i].flags & stackop)
 						{
-							for (j = (stackopstartaddr|0x0100); j <= (stackopendaddr|0x0100); j++)
+							for (j = (stackopstartaddr|0x0100); j <= (static_cast<unsigned int>(stackopendaddr)|0x0100); j++)
 							{
 								if (watchpoint[i].endaddress)
 								{
@@ -840,7 +849,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 							// Pushes to stack
 							if (watchpoint[i].flags & WP_W)
 							{
-								for (j = (X.S|0x0100); j < (StackAddrBackup|0x0100); j++)
+								for (j = (X.S|0x0100); j < (static_cast<unsigned int>(StackAddrBackup)|0x0100); j++)
 								{
 									if (watchpoint[i].endaddress)
 									{
@@ -858,7 +867,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 							// Pulls from stack
 							if (watchpoint[i].flags & WP_R)
 							{
-								for (j = (StackAddrBackup|0x0100); j < (X.S|0x0100); j++)
+								for (j = (StackAddrBackup|0x0100); j < (static_cast<unsigned int>(X.S)|0x0100); j++)
 								{
 									if (watchpoint[i].endaddress)
 									{

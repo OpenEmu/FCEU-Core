@@ -67,6 +67,11 @@
 		87709EE3294D2B0D0084AEE0 /* lcdcompzapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 87709EE2294D2B0D0084AEE0 /* lcdcompzapper.cpp */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
+		8F28FD5029FD3E7D008FC4A9 /* 354.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD4D29FD3E7D008FC4A9 /* 354.cpp */; };
+		8F28FD5129FD3E7D008FC4A9 /* coolgirl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD4E29FD3E7D008FC4A9 /* coolgirl.cpp */; };
+		8F28FD5229FD3E7D008FC4A9 /* inx007t.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD4F29FD3E7D008FC4A9 /* inx007t.cpp */; };
+		8F28FD5529FD3EA4008FC4A9 /* debugsymboltable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD5329FD3EA4008FC4A9 /* debugsymboltable.cpp */; };
+		8F28FD5829FD3EB8008FC4A9 /* mutex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */; };
 		945942D014E4F2DC0015D2AA /* FCEUX.icns in Resources */ = {isa = PBXBuildFile; fileRef = 945942CF14E4F2DC0015D2AA /* FCEUX.icns */; };
 		949BBA741A9EF079007B49CC /* 01-222.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 949BB7521A9EED55007B49CC /* 01-222.cpp */; };
 		949BBA751A9EF079007B49CC /* 09-034a.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 949BB7531A9EED55007B49CC /* 09-034a.cpp */; };
@@ -334,6 +339,13 @@
 		87709EE2294D2B0D0084AEE0 /* lcdcompzapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lcdcompzapper.cpp; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* FCEU.oecoreplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FCEU.oecoreplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8F28FD4D29FD3E7D008FC4A9 /* 354.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = 354.cpp; sourceTree = "<group>"; };
+		8F28FD4E29FD3E7D008FC4A9 /* coolgirl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = coolgirl.cpp; sourceTree = "<group>"; };
+		8F28FD4F29FD3E7D008FC4A9 /* inx007t.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = inx007t.cpp; sourceTree = "<group>"; };
+		8F28FD5329FD3EA4008FC4A9 /* debugsymboltable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debugsymboltable.cpp; sourceTree = "<group>"; };
+		8F28FD5429FD3EA4008FC4A9 /* debugsymboltable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugsymboltable.h; sourceTree = "<group>"; };
+		8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mutex.cpp; sourceTree = "<group>"; };
+		8F28FD5729FD3EB8008FC4A9 /* mutex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mutex.h; sourceTree = "<group>"; };
 		945942CE14E4EF180015D2AA /* OENESSystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OENESSystemResponderClient.h; path = ../OpenEmu/SystemPlugins/NES/OENESSystemResponderClient.h; sourceTree = "<group>"; };
 		945942CF14E4F2DC0015D2AA /* FCEUX.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = FCEUX.icns; sourceTree = "<group>"; };
 		949BB74E1A9EED55007B49CC /* asm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = asm.cpp; sourceTree = "<group>"; };
@@ -776,6 +788,8 @@
 				949BB7F01A9EED56007B49CC /* config.cpp */,
 				949BB7F21A9EED56007B49CC /* debug.cpp */,
 				949BB7F31A9EED56007B49CC /* debug.h */,
+				8F28FD5329FD3EA4008FC4A9 /* debugsymboltable.cpp */,
+				8F28FD5429FD3EA4008FC4A9 /* debugsymboltable.h */,
 				949BB7F41A9EED56007B49CC /* drawing.cpp */,
 				949BB7F51A9EED56007B49CC /* drawing.h */,
 				949BB7F61A9EED56007B49CC /* driver.h */,
@@ -893,6 +907,7 @@
 				949BB77D1A9EED56007B49CC /* 32.cpp */,
 				949BB77E1A9EED56007B49CC /* 33.cpp */,
 				949BB77F1A9EED56007B49CC /* 34.cpp */,
+				8F28FD4D29FD3E7D008FC4A9 /* 354.cpp */,
 				949BB7801A9EED56007B49CC /* 36.cpp */,
 				949BB7811A9EED56007B49CC /* 3d-block.cpp */,
 				949BB7821A9EED56007B49CC /* 40.cpp */,
@@ -944,6 +959,7 @@
 				87709ED8294D24F10084AEE0 /* cheapocabra.cpp */,
 				949BB7AC1A9EED56007B49CC /* cityfighter.cpp */,
 				870D6EA71D4C1F93001E8FC6 /* coolboy.cpp */,
+				8F28FD4E29FD3E7D008FC4A9 /* coolgirl.cpp */,
 				949BB7AD1A9EED56007B49CC /* dance2000.cpp */,
 				949BB7AE1A9EED56007B49CC /* datalatch.cpp */,
 				949BB7AF1A9EED56007B49CC /* dream.cpp */,
@@ -965,6 +981,7 @@
 				87709EDC294D252B0084AEE0 /* hp10xx_hp20xx.cpp */,
 				870D6EB11D4C20B3001E8FC6 /* hp898f.cpp */,
 				870D6EB21D4C20B3001E8FC6 /* inlnsf.cpp */,
+				8F28FD4F29FD3E7D008FC4A9 /* inx007t.cpp */,
 				949BB7BA1A9EED56007B49CC /* karaoke.cpp */,
 				949BB7BB1A9EED56007B49CC /* kof97.cpp */,
 				870D6EB51D4C20F8001E8FC6 /* ks7010.cpp */,
@@ -1166,6 +1183,8 @@
 				949BBA271A9EED5B007B49CC /* md5.h */,
 				949BBA281A9EED5B007B49CC /* memory.cpp */,
 				949BBA291A9EED5B007B49CC /* memory.h */,
+				8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */,
+				8F28FD5729FD3EB8008FC4A9 /* mutex.h */,
 				949BBA2B1A9EED5B007B49CC /* unzip.cpp */,
 				949BBA2C1A9EED5B007B49CC /* unzip.h */,
 				949BBA2D1A9EED5B007B49CC /* valuearray.h */,
@@ -1270,6 +1289,7 @@
 			files = (
 				82EC40A30FD9EC5A0017FC19 /* FCEUGameCore.mm in Sources */,
 				949BBB381A9EFF4A007B49CC /* asm.cpp in Sources */,
+				8F28FD5129FD3E7D008FC4A9 /* coolgirl.cpp in Sources */,
 				949BBB391A9EFF4A007B49CC /* cart.cpp in Sources */,
 				870D6EA81D4C1F93001E8FC6 /* coolboy.cpp in Sources */,
 				949BBB3A1A9EFF4A007B49CC /* cheat.cpp in Sources */,
@@ -1296,6 +1316,7 @@
 				949BBB501A9EFF4B007B49CC /* video.cpp in Sources */,
 				949BBB511A9EFF4B007B49CC /* vsuni.cpp in Sources */,
 				949BBB521A9EFF4B007B49CC /* wave.cpp in Sources */,
+				8F28FD5829FD3EB8008FC4A9 /* mutex.cpp in Sources */,
 				949BBB531A9EFF4B007B49CC /* x6502.cpp in Sources */,
 				949BBA741A9EF079007B49CC /* 01-222.cpp in Sources */,
 				949BBA751A9EF079007B49CC /* 09-034a.cpp in Sources */,
@@ -1336,6 +1357,7 @@
 				949BBA961A9EF079007B49CC /* 230.cpp in Sources */,
 				949BBA971A9EF079007B49CC /* 232.cpp in Sources */,
 				949BBA981A9EF079007B49CC /* 234.cpp in Sources */,
+				8F28FD5029FD3E7D008FC4A9 /* 354.cpp in Sources */,
 				949BBA991A9EF079007B49CC /* 235.cpp in Sources */,
 				949BBA9A1A9EF079007B49CC /* 244.cpp in Sources */,
 				949BBA9B1A9EF079007B49CC /* 246.cpp in Sources */,
@@ -1401,6 +1423,7 @@
 				949BBAD01A9EF07A007B49CC /* datalatch.cpp in Sources */,
 				949BBAD11A9EF07A007B49CC /* dream.cpp in Sources */,
 				949BBAD21A9EF07A007B49CC /* edu2000.cpp in Sources */,
+				8F28FD5529FD3EA4008FC4A9 /* debugsymboltable.cpp in Sources */,
 				949BBAD31A9EF07A007B49CC /* emu2413.c in Sources */,
 				949BBAD51A9EF07A007B49CC /* famicombox.cpp in Sources */,
 				949BBAD61A9EF07A007B49CC /* ffe.cpp in Sources */,
@@ -1448,6 +1471,7 @@
 				870D6EC21D4C2BF4001E8FC6 /* snesmouse.cpp in Sources */,
 				949BBAFB1A9EF07A007B49CC /* sl1632.cpp in Sources */,
 				949BBAFC1A9EF07A007B49CC /* subor.cpp in Sources */,
+				8F28FD5229FD3E7D008FC4A9 /* inx007t.cpp in Sources */,
 				949BBAFD1A9EF07A007B49CC /* super24.cpp in Sources */,
 				870D6EAF1D4C1FE7001E8FC6 /* et-4320.cpp in Sources */,
 				949BBAFE1A9EF07A007B49CC /* supervision.cpp in Sources */,

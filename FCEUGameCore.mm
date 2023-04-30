@@ -795,6 +795,7 @@ const char *GetKeyboard(void) {return "";}
 bool turbo = false;
 bool swapDuty = 0; // some Famicom and NES clones had duty cycle bits swapped
 int dendy = 0;
+int eoptions = 0;
 int closeFinishedMovie = 0;
 int KillFCEUXonFrame = 0;
 int FCEUD_ShowStatusIcon(void) {return 0;}
@@ -824,6 +825,7 @@ EMUFILE_FILE *FCEUD_UTF8_fstream(const char *fn, const char *m)
 }
 void FCEUD_NetplayText(uint8 *text) {};
 void FCEUD_NetworkClose(void) {}
+void FCEUD_FlushTrace(void) {}
 void FCEUD_VideoChanged (void) {}
 bool FCEUD_ShouldDrawInputAids() {return false;}
 bool FCEUD_PauseAfterPlayback() {return false;}
