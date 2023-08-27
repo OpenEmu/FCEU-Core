@@ -72,6 +72,7 @@
 		8F28FD5229FD3E7D008FC4A9 /* inx007t.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD4F29FD3E7D008FC4A9 /* inx007t.cpp */; };
 		8F28FD5529FD3EA4008FC4A9 /* debugsymboltable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD5329FD3EA4008FC4A9 /* debugsymboltable.cpp */; };
 		8F28FD5829FD3EB8008FC4A9 /* mutex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */; };
+		8F5A69CF2A9BF26400B405DB /* ld65dbg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F5A69CB2A9BF26400B405DB /* ld65dbg.cpp */; };
 		945942D014E4F2DC0015D2AA /* FCEUX.icns in Resources */ = {isa = PBXBuildFile; fileRef = 945942CF14E4F2DC0015D2AA /* FCEUX.icns */; };
 		949BBA741A9EF079007B49CC /* 01-222.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 949BB7521A9EED55007B49CC /* 01-222.cpp */; };
 		949BBA751A9EF079007B49CC /* 09-034a.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 949BB7531A9EED55007B49CC /* 09-034a.cpp */; };
@@ -346,6 +347,12 @@
 		8F28FD5429FD3EA4008FC4A9 /* debugsymboltable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debugsymboltable.h; sourceTree = "<group>"; };
 		8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mutex.cpp; sourceTree = "<group>"; };
 		8F28FD5729FD3EB8008FC4A9 /* mutex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mutex.h; sourceTree = "<group>"; };
+		8F5A69C72A9BF26400B405DB /* timeStamp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timeStamp.cpp; sourceTree = "<group>"; };
+		8F5A69C82A9BF26400B405DB /* profiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = profiler.h; sourceTree = "<group>"; };
+		8F5A69C92A9BF26400B405DB /* profiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profiler.cpp; sourceTree = "<group>"; };
+		8F5A69CA2A9BF26400B405DB /* timeStamp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timeStamp.h; sourceTree = "<group>"; };
+		8F5A69CB2A9BF26400B405DB /* ld65dbg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ld65dbg.cpp; sourceTree = "<group>"; };
+		8F5A69CC2A9BF26400B405DB /* ld65dbg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ld65dbg.h; sourceTree = "<group>"; };
 		945942CE14E4EF180015D2AA /* OENESSystemResponderClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OENESSystemResponderClient.h; path = ../OpenEmu/SystemPlugins/NES/OENESSystemResponderClient.h; sourceTree = "<group>"; };
 		945942CF14E4F2DC0015D2AA /* FCEUX.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = FCEUX.icns; sourceTree = "<group>"; };
 		949BB74E1A9EED55007B49CC /* asm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = asm.cpp; sourceTree = "<group>"; };
@@ -816,6 +823,8 @@
 				949BB9A11A9EED59007B49CC /* input */,
 				949BB9B61A9EED59007B49CC /* input.cpp */,
 				949BB9B71A9EED59007B49CC /* input.h */,
+				8F5A69CB2A9BF26400B405DB /* ld65dbg.cpp */,
+				8F5A69CC2A9BF26400B405DB /* ld65dbg.h */,
 				949BB9F71A9EED5A007B49CC /* lua-engine.cpp */,
 				949BB9F81A9EED5A007B49CC /* movie.cpp */,
 				949BB9F91A9EED5A007B49CC /* movie.h */,
@@ -832,6 +841,8 @@
 				949BBA0B1A9EED5A007B49CC /* ppu.cpp */,
 				949BBA0C1A9EED5A007B49CC /* ppu.h */,
 				949BBA0D1A9EED5A007B49CC /* pputile.inc */,
+				8F5A69C92A9BF26400B405DB /* profiler.cpp */,
+				8F5A69C82A9BF26400B405DB /* profiler.h */,
 				949BBA0F1A9EED5A007B49CC /* sound.cpp */,
 				949BBA101A9EED5A007B49CC /* sound.h */,
 				949BBA111A9EED5A007B49CC /* state.cpp */,
@@ -1185,6 +1196,8 @@
 				949BBA291A9EED5B007B49CC /* memory.h */,
 				8F28FD5629FD3EB8008FC4A9 /* mutex.cpp */,
 				8F28FD5729FD3EB8008FC4A9 /* mutex.h */,
+				8F5A69C72A9BF26400B405DB /* timeStamp.cpp */,
+				8F5A69CA2A9BF26400B405DB /* timeStamp.h */,
 				949BBA2B1A9EED5B007B49CC /* unzip.cpp */,
 				949BBA2C1A9EED5B007B49CC /* unzip.h */,
 				949BBA2D1A9EED5B007B49CC /* valuearray.h */,
@@ -1463,6 +1476,7 @@
 				949BBAF61A9EF07A007B49CC /* sa-9602b.cpp in Sources */,
 				870D6EA61D4C1F82001E8FC6 /* BMW8544.cpp in Sources */,
 				870D6EB41D4C20B3001E8FC6 /* inlnsf.cpp in Sources */,
+				8F5A69CF2A9BF26400B405DB /* ld65dbg.cpp in Sources */,
 				949BBAF71A9EF07A007B49CC /* sachen.cpp in Sources */,
 				949BBAF81A9EF07A007B49CC /* sc-127.cpp in Sources */,
 				870D6EB31D4C20B3001E8FC6 /* hp898f.cpp in Sources */,
