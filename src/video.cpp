@@ -72,7 +72,8 @@ static u8 *xbsave=NULL;
 GUIMESSAGE guiMessage;
 GUIMESSAGE subtitleMessage;
 
-bool vidGuiMsgEna = true;
+// OpenEmu
+bool vidGuiMsgEna = false;
 
 //for input display
 extern int input_display;
