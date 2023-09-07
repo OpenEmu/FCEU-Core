@@ -22,6 +22,9 @@
 #ifndef __FCEU_TYPES
 #define __FCEU_TYPES
 
+#include <stdlib.h>
+#include <new>
+
 //enables a hack designed for debugging dragon warrior 3 which treats BRK as a 3-byte opcode
 //#define BRK_3BYTE_HACK
 
@@ -182,24 +185,28 @@ typedef uint8 (*readfunc)(uint32 A);
 // Scoped pointer ensures that memory pointed to by this object gets cleaned up
 // and deallocated when this object goes out of scope. Helps prevent memory leaks
 // on temporary memory allocations in functions with early outs.
+enum fceuAllocType
+{
+	FCEU_ALLOC_TYPE_NEW = 0,
+	FCEU_ALLOC_TYPE_NEW_ARRAY,
+	FCEU_ALLOC_TYPE_MALLOC
+};
+
 template <typename T> 
 class fceuScopedPtr
 {
 	public:
-		fceuScopedPtr( T *ptrIn = nullptr )
+		fceuScopedPtr( T *ptrIn = nullptr, enum  fceuAllocType allocType = FCEU_ALLOC_TYPE_NEW )
 		{
 			//printf("Scoped Pointer Constructor <%s>: %p\n", typeid(T).name(), ptrIn );
 			ptr = ptrIn;
+			_allocType = allocType;
 		}
 
 		~fceuScopedPtr(void)
 		{
 			//printf("Scoped Pointer Destructor <%s>: %p\n", typeid(T).name(), ptr );
-			if (ptr)
-			{
-				delete ptr;
-				ptr = nullptr;
-			}
+			Delete();
 		}
 
 		T* operator= (T *ptrIn)
@@ -217,13 +224,32 @@ class fceuScopedPtr
 		{
 			if (ptr)
 			{
-				delete ptr;
+				switch (_allocType)
+				{
+					case FCEU_ALLOC_TYPE_MALLOC:
+					{
+						::free(ptr);
+					}
+					break;
+					case FCEU_ALLOC_TYPE_NEW_ARRAY:
+					{
+						delete [] ptr;
+					}
+					break;
+					default:
+					case FCEU_ALLOC_TYPE_NEW:
+					{
+						delete ptr;
+					}
+					break;
+				}
 				ptr = nullptr;
 			}
 		}
 
 	private:
 		T *ptr;
+		enum fceuAllocType  _allocType;
 
 };
 

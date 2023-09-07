@@ -424,7 +424,7 @@ static void MMC5PRG(void) {
 	switch (mmc5psize & 3) {
 	case 0:
 		MMC5ROMWrProtect[0] = MMC5ROMWrProtect[1] = MMC5ROMWrProtect[2] = MMC5ROMWrProtect[3] = 1;
-		setprg32(0x8000, ((PRGBanks[1] & 0x7F) >> 2));
+		setprg32(0x8000, ((PRGBanks[3] & 0x7F) >> 2));
 		for (x = 0; x < 4; x++)
 			MMC5MemIn[1 + x] = 1;
 		break;
@@ -1021,22 +1021,23 @@ static void GenMMC5_Init(CartInfo *info, int wsize, int battery) {
 
 	MMC5battery = battery;
 	if (battery) {
-		info->SaveGame[0] = WRAM;
+		uint32 saveGameSize = 0;
 		if (info->ines2)
 		{
-			info->SaveGameLen[0] = info->battery_wram_size;
+			saveGameSize = info->battery_wram_size;
 		}
 		else
 		{
 			//this is more complex than it looks because it MUST BE, I guess. is there an assumption that only 8KB of 16KB is battery backed? That's NES mappers for you
 			//I added 64KB for the new 64KB homebrews
 			if (wsize <= 16)
-				info->SaveGameLen[0] = 8192;
+				saveGameSize = 8192;
 			else if(wsize == 64)
-				info->SaveGameLen[0] = 64*1024;
+				saveGameSize = 64*1024;
 			else
-				info->SaveGameLen[0] = 32768;
+				saveGameSize = 32768;
 		}
+		info->addSaveGameBuf( WRAM, saveGameSize );
 	}
 
 	MMC5HackVROMMask = CHRmask4[0];

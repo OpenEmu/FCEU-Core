@@ -72,7 +72,8 @@ static u8 *xbsave=NULL;
 GUIMESSAGE guiMessage;
 GUIMESSAGE subtitleMessage;
 
-bool vidGuiMsgEna = true;
+// OpenEmu
+bool vidGuiMsgEna = false;
 
 //for input display
 extern int input_display;
@@ -86,6 +87,8 @@ std::string AsSnapshotName ="";			//adelikat:this will set the snapshot name whe
 
 void FCEUI_SetSnapshotAsName(std::string name) { AsSnapshotName = name; }
 std::string FCEUI_GetSnapshotAsName() { return AsSnapshotName; }
+
+static void FCEU_DrawPauseCountDown(uint8 *XBuf);
 
 void FCEU_KillVirtualVideo(void)
 {
@@ -254,6 +257,7 @@ void FCEU_PutImage(void)
 		FCEU_DrawLagCounter(XBuf);
 		FCEU_DrawNTSCControlBars(XBuf);
 		FCEU_DrawRecordingStatus(XBuf);
+		FCEU_DrawPauseCountDown(XBuf);
 		ShowFPS();
 	}
 
@@ -770,4 +774,36 @@ void ShowFPS(void)
 	boopcount++;
 
 	DrawTextTrans(XBuf + ((256 - ClipSidesOffset) - 40) + (FSettings.FirstSLine + 4) * 256, 256, (uint8*)fpsmsg, 0xA0);
+}
+
+bool showPauseCountDown = true;
+
+static void FCEU_DrawPauseCountDown(uint8 *XBuf)
+{
+	if (EmulationPaused & EMULATIONPAUSED_TIMER)
+	{
+		int pauseFramesLeft = FCEUI_PauseFramesRemaining();
+
+		if (showPauseCountDown && (pauseFramesLeft > 0) )
+		{
+			char text[32];
+			int framesPerSec;
+
+			if (PAL || dendy)
+			{
+				framesPerSec = 50;
+			}
+			else
+			{
+				framesPerSec = 60;
+			}
+
+			sprintf(text, "Unpausing in %d...", (pauseFramesLeft / framesPerSec) + 1);
+
+			if (text[0])
+			{
+				DrawTextTrans(XBuf + ClipSidesOffset + (FSettings.FirstSLine) * 256, 256, (uint8*)text, 0xA0);
+			}
+		}
+	}
 }

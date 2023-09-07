@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "fceu.h"
 #include "cart.h"
+#include "ld65dbg.h"
 
 #ifdef __QT_DRIVER__
 #include "Qt/ConsoleUtilities.h"
@@ -385,6 +386,18 @@ void debugSymbolTable_t::clear(void)
 	pageMap.clear();
 }
 //--------------------------------------------------------------
+int debugSymbolTable_t::numSymbols(void)
+{
+	int n = 0;
+	FCEU::autoScopedLock alock(cs);
+
+	for (auto it=pageMap.begin(); it!=pageMap.end(); it++)
+	{
+		n += it->second->size();
+	}
+	return n;
+}
+//--------------------------------------------------------------
 static int generateNLFilenameForBank(int bank, std::string &NLfilename)
 {
 	int i;
@@ -743,12 +756,11 @@ int debugSymbolTable_t::loadGameSymbols(void)
 {
 	int nPages, pageSize, romSize = 0x10000;
 
-	this->save();
 	this->clear();
 
 	if ( GameInfo != nullptr )
 	{
-		romSize = 16 + CHRsize[0] + PRGsize[0];
+		romSize = NES_HEADER_SIZE + CHRsize[0] + PRGsize[0];
 	}
 
 	loadFileNL( -1 );
@@ -773,6 +785,7 @@ int debugSymbolTable_t::loadGameSymbols(void)
 
 	return 0;
 }
+//--------------------------------------------------------------
 int debugSymbolTable_t::addSymbolAtBankOffset(int bank, int ofs, const char *name, const char *comment)
 {
 	int result = -1;
@@ -907,5 +920,83 @@ void debugSymbolTable_t::print(void)
 const char *debugSymbolTable_t::errorMessage(void)
 {
 	return dbgSymTblErrMsg;
+}
+//--------------------------------------------------------------
+static void ld65_iterate_cb( void *userData, ld65::sym *s )
+{
+	debugSymbolTable_t *tbl = static_cast<debugSymbolTable_t*>(userData);
+
+	if (tbl)
+	{
+		tbl->ld65_SymbolLoad(s);
+	}
+}
+//--------------------------------------------------------------
+void debugSymbolTable_t::ld65_SymbolLoad( ld65::sym *s )
+{
+	int bank = -1;
+	debugSymbol_t *sym;
+	debugSymbolPage_t *page;
+	ld65::scope *scope = s->getScope();
+	ld65::segment *seg = s->getSegment();
+
+	if ( s->type() == ld65::sym::LABEL )
+	{
+		//printf("Symbol Label Load: name:\"%s\"  val:%i  0x%x\n", s->name(), s->value(), s->value() );
+		if (seg)
+		{
+			int romAddr = seg->ofs() - NES_HEADER_SIZE;
+
+			bank =  romAddr >= 0 ? romAddr / (1<<debuggerPageSize) : -1;
+
+			//printf("  Seg: name:'%s'  ofs:%i  Bank:%x\n", seg->name(), romAddr, bank );
+		}
+		//printf("\n");
+
+		auto pageIt = pageMap.find(bank);
+
+		if (pageIt == pageMap.end() )
+		{
+			page = new debugSymbolPage_t(bank);
+
+			pageMap[bank] = page;
+		}
+		else
+		{
+			page = pageIt->second;
+		}
+		std::string name;
+
+		if (scope)
+		{
+			scope->getFullName(name);
+		}
+		name.append(s->name());
+
+		//printf("Creating Symbol: %s\n", name.c_str() );
+
+		sym = new debugSymbol_t( s->value(), name.c_str() );
+
+		if ( page->addSymbol( sym ) )
+		{
+			//printf("Failed to load sym: id:%i name:'%s' bank:%i \n", s->id(), s->name(), bank );
+			delete sym;
+		}
+	}
+}
+//--------------------------------------------------------------
+int debugSymbolTable_t::ld65LoadDebugFile( const char *dbgFilePath )
+{
+	ld65::database db;
+
+	if ( db.dbgFileLoad( dbgFilePath ) )
+	{
+		return -1;
+	}
+	FCEU::autoScopedLock alock(cs);
+
+	db.iterateSymbols( this, ld65_iterate_cb );
+
+	return 0;
 }
 //--------------------------------------------------------------
